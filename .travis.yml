@@ -1,0 +1,17 @@
+sudo: true
+dist: trusty
+language: bash
+
+jobs:
+    stages:
+        - test
+        - build docker image
+    include:
+        - stage: test
+          script: echo "Nice Job" #docker run --rm -v $(pwd):/app -w /app swift swift test
+        - stage: build docker image
+          script:
+            - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+            - docker build -t $DOCKER_USERNAME/hambach-admin:$TAG .
+            - docker push $DOCKER_USERNAME/hambach-admin
