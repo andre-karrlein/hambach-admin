@@ -29,11 +29,13 @@ public class ArticleCreator
     {
         let articleLayoutString = try self.articleLayout.getTemplate()
 
-        var name = "André Karrlein"
         var currentUser = "André Karrlein"
 
         if (userId == 2) {
             currentUser = "Philipp Niedermeyer"
+        }
+        if (userId == 3) {
+            currentUser = "Patrick Geißler"
         }
 
         var article = articleLayoutString.replacingOccurrences(of: "%title%", with: "")
@@ -63,6 +65,12 @@ public class ArticleCreator
         if (userId == 2) {
             currentUser = "Philipp Niedermeyer"
         }
+        if (content.creator == 3) {
+            name = "Patrick Geißler"
+        }
+        if (userId == 3) {
+            currentUser = "Patrick Geißler"
+        }
 
         var article = articleLayoutString.replacingOccurrences(of: "%title%", with: content.title)
         article = article.replacingOccurrences(of: "%user%", with: name)
@@ -73,6 +81,7 @@ public class ArticleCreator
         article = article.replacingOccurrences(of: "%imageLink%", with: content.titleImage)
         article = article.replacingOccurrences(of: "%date%", with: content.date)
         article = article.replacingOccurrences(of: "%article%", with: content.article)
+        article = article.replacingOccurrences(of: "%articleId%", with: String(content.contentId!))
 
 
         return article
