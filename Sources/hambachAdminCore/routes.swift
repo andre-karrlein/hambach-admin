@@ -52,8 +52,28 @@ public func routes(_ router: Router) throws
 
     sessions.post(LoginRequest.self, at: "login") { request, data -> Response in
         //#TODO login handling
-        try request.session()["user"] = data.user
 
+        let login = data.username
+        if (login == "a.karrlein") {
+            try request.session()["user"] = "1"
+        }
+        if (login == "p.niedermeyer") {
+            try request.session()["user"] = "2"
+        }
+        if (login == "p.geissler") {
+            try request.session()["user"] = "3"
+        }
+
+        /*return request.withPooledConnection(to: .mysql) { db -> Future<Response> in
+            return try User.query(on: db).filter(\User.login == "a.karrlein").map(to: Response.self) { user in
+                guard let user = user else {
+                    throw Abort(.unauthorized, reason: "Wrong login credentials!")
+                }
+                try request.session()["user"] = user.userId
+
+                return request.redirect(to: "/home")
+            }
+        }*/
         return request.redirect(to: "/home")
     }
     sessions.post(ContentData.self, at: "save") { request, data in
@@ -64,6 +84,21 @@ public func routes(_ router: Router) throws
                 titleImage = data.titleImage!
             }
 
+            if (data.articleId != nil || !data.articleId!.isEmpty) {
+                let content = Contents(
+                    contentId: Int(data.articleId!),
+                    title: data.title,
+                    creator: Int(data.userId)!,
+                    date: data.date,
+                    article: data.article,
+                    category: data.category,
+                    type: data.type,
+                    titleImage: titleImage
+                    )
+                return content.save(on: db).map(to: Response.self) { _ in
+                    return request.redirect(to: "/home")
+                }
+            }
             let content = Contents(
                 title: data.title,
                 creator: Int(data.userId)!,
@@ -72,7 +107,7 @@ public func routes(_ router: Router) throws
                 category: data.category,
                 type: data.type,
                 titleImage: titleImage
-            )
+                )
             return content.save(on: db).map(to: Response.self) { _ in
                 return request.redirect(to: "/home")
             }
