@@ -54,13 +54,14 @@ public func routes(_ router: Router) throws
         //#TODO login handling
 
         let login = data.username
-        if (login == "a.karrlein") {
+        let password = data.password
+        if (login == "a.karrlein" && password == "hambach") {
             try request.session()["user"] = "1"
         }
-        if (login == "p.niedermeyer") {
+        if (login == "p.niedermeyer" && password == "hambach") {
             try request.session()["user"] = "2"
         }
-        if (login == "p.geissler") {
+        if (login == "p.geissler" && password == "hambach") {
             try request.session()["user"] = "3"
         }
 
@@ -80,8 +81,8 @@ public func routes(_ router: Router) throws
         return request.withPooledConnection(to: .mysql) { db -> Future<Response> in
             var titleImage = ""
 
-            if (data.titleImage != nil) {
-                titleImage = data.titleImage!
+            if (data.imageLink != nil) {
+                titleImage = data.imageLink!
             }
 
             if (data.articleId != nil || !data.articleId!.isEmpty) {
