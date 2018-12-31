@@ -81,8 +81,8 @@ public func routes(_ router: Router) throws
         return request.withPooledConnection(to: .mysql) { db -> Future<Response> in
             var titleImage = ""
 
-            if (data.imageLink != nil) {
-                titleImage = data.imageLink!
+            if (data.titleImage != nil) {
+                titleImage = data.titleImage!
             }
 
             if (data.articleId != nil || !data.articleId!.isEmpty) {
