@@ -18,7 +18,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     let migrations = MigrationConfig()
     services.register(migrations)
 
-    let mysqlConfig = MySQLDatabaseConfig(hostname: "dev.karrlein.com", port: 3306, username: "hambachFrontend", password: "AndreRbl93", database: "hambach")
+    let mysqlConfig = MySQLDatabaseConfig(hostname: "db.karrlein.com", port: 3306, username: "hambach", password: "spvggHambach1933", database: "hambach")
     services.register(mysqlConfig)
 
     config.prefer(MemoryKeyedCache.self, for: KeyedCache.self)
