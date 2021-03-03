@@ -1,6 +1,10 @@
 package main
 
-import "github.com/maxence-charriere/go-app/v7/pkg/app"
+import (
+	"log"
+
+	"github.com/maxence-charriere/go-app/v7/pkg/app"
+)
 
 type navbar struct {
 	app.Compo
@@ -28,25 +32,25 @@ type login struct {
 func (h *home) Render() app.UI {
 	var status string
 	app.SessionStorage.Get("loggedIn", status)
-	if status == "" {
-		status = "false"
-	}
+	//if status == "" {
+	//	status = "false"
+	//}
 	if status == "false" {
-		app.Navigate("/login")
+		//~app.Navigate("/login")
 	}
 	return app.Div().Body(
-		app.Button().Class("button is-danger").Text("Logout").OnClick(h.OnClick),
+		app.Button().Class("button is-danger").Text(status).OnClick(h.OnClick),
 	)
 }
 
 func (h *home) OnClick(ctx app.Context, e app.Event) {
-	app.SessionStorage.Set("loggedIn", "false")
-	app.Navigate("/")
+	//app.SessionStorage.Set("loggedIn", "false")
+	app.Navigate("/login")
 }
 
 func (l *login) Render() app.UI {
 	return app.Div().Body(
-		&navbar{},
+		//&navbar{},
 		app.Form().Class("box").Body(
 			app.Div().Class("field").Body(
 				app.Label().Class("label").Text("User"),
@@ -67,8 +71,8 @@ func (l *login) Render() app.UI {
 
 func (l *login) OnClick(ctx app.Context, e app.Event) {
 	//ctx.JSSrc.Get("value")
-
-	app.SessionStorage.Set("loggedIn", "true")
+	status := "True"
+	log.Fatal(app.SessionStorage.Set("loggedIn", status))
 	app.Navigate("/")
 }
 
