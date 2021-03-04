@@ -27,8 +27,8 @@ type article struct {
 type login struct {
 	app.Compo
 
-	username string
-	password string
+	Username string
+	Password string
 }
 
 func (h *home) Render() app.UI {
@@ -50,31 +50,41 @@ func (h *home) OnClick(ctx app.Context, e app.Event) {
 }
 
 func (l *login) Render() app.UI {
-	return app.Div().Body(
-		//&navbar{},
-		app.Form().Class("box").Body(
-			app.Div().Class("field").Body(
-				app.Label().Class("label").Text("User"),
-				app.Div().Class("control").Body(
-					app.Input().Class("input").Type("text").Placeholder("username").Value(l.username),
+	return app.Section().Class("section").Body(
+		app.Body().Body(
+			app.Div().Class("container").Body(
+				app.Form().Class("box").OnSubmit(l.OnSubmit).Body(
+					app.Div().Class("field").Body(
+						app.Label().Class("label").Text("User"),
+						app.Div().Class("control").Body(
+							app.Input().Class("input").Type("text").Placeholder("username").ID("username"),
+						),
+					),
+					app.Div().Class("field").Body(
+						app.Label().Class("label").Text("Password"),
+						app.Div().Class("control").Body(
+							app.Input().Class("input").Type("password").Placeholder("********").ID("password"),
+						),
+					),
+					app.Button().Class("button is-primary").Text("Sign in").Type("submit"),
 				),
 			),
-			app.Div().Class("field").Body(
-				app.Label().Class("label").Text("Password"),
-				app.Div().Class("control").Body(
-					app.Input().Class("input").Type("password").Placeholder("********").Value(l.password),
-				),
-			),
-			app.Button().Class("button is-primary").Text("Sign in").OnClick(l.OnClick),
 		),
 	)
 }
 
-func (l *login) OnClick(ctx app.Context, e app.Event) {
-	//ctx.JSSrc.Get("value")
-	status := status{LoggedIn: true}
+func (l *login) OnSubmit(ctx app.Context, e app.Event) {
+	e.PreventDefault()
+	username := app.Window().GetElementByID("username").Get("value").String()
+	//password := app.Window().GetElementByID("password").Get("value").String()
+
+	if username == "akarrlein" {//&& password == "hambach" {
+		status := status{LoggedIn: true}
+		app.SessionStorage.Set("status", status)
+		app.Navigate("/")
+	}
+	status := status{LoggedIn: false}
 	app.SessionStorage.Set("status", status)
-	app.Navigate("/")
 }
 
 func main() {
