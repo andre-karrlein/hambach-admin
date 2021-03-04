@@ -1,13 +1,15 @@
 package main
 
 import (
-	"log"
-
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
 )
 
 type navbar struct {
 	app.Compo
+}
+
+type status struct {
+	LoggedIn bool `json:"loggedIn"`
 }
 
 type home struct {
@@ -30,21 +32,20 @@ type login struct {
 }
 
 func (h *home) Render() app.UI {
-	var status string
-	app.SessionStorage.Get("loggedIn", status)
-	//if status == "" {
-	//	status = "false"
-	//}
-	if status == "false" {
-		//~app.Navigate("/login")
+	var status status
+	app.SessionStorage.Get("status", &status)
+
+	if status.LoggedIn != true {
+		app.Navigate("/login")
 	}
 	return app.Div().Body(
-		app.Button().Class("button is-danger").Text(status).OnClick(h.OnClick),
+		app.Button().Class("button is-danger").Text("Logout").OnClick(h.OnClick),
 	)
 }
 
 func (h *home) OnClick(ctx app.Context, e app.Event) {
-	//app.SessionStorage.Set("loggedIn", "false")
+	status := status{LoggedIn: false}
+	app.SessionStorage.Set("status", status)
 	app.Navigate("/login")
 }
 
@@ -71,8 +72,8 @@ func (l *login) Render() app.UI {
 
 func (l *login) OnClick(ctx app.Context, e app.Event) {
 	//ctx.JSSrc.Get("value")
-	status := "True"
-	log.Fatal(app.SessionStorage.Set("loggedIn", status))
+	status := status{LoggedIn: true}
+	app.SessionStorage.Set("status", status)
 	app.Navigate("/")
 }
 
