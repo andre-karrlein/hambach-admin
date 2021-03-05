@@ -1,7 +1,10 @@
 package main
 
 import (
+	"log"
+
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type navbar struct {
@@ -29,6 +32,15 @@ type login struct {
 
 	Username string
 	Password string
+}
+
+const hash = "$2y$14$7aNuDEs7G6KxyYZLShEHlOpY4cjxV4kizm3noGFNBW11dvJdgtp3G"
+
+func getUsers() map[string]string {
+	return map[string]string{
+		"akarrlein": hash,
+		"pgeissler": hash,
+	}
 }
 
 func (h *home) Render() app.UI {
@@ -76,15 +88,33 @@ func (l *login) Render() app.UI {
 func (l *login) OnSubmit(ctx app.Context, e app.Event) {
 	e.PreventDefault()
 	username := app.Window().GetElementByID("username").Get("value").String()
-	//password := app.Window().GetElementByID("password").Get("value").String()
+	password := app.Window().GetElementByID("password").Get("value").String()
 
-	if username == "akarrlein" {//&& password == "hambach" {
+	if loginUser(username, password) {
 		status := status{LoggedIn: true}
 		app.SessionStorage.Set("status", status)
 		app.Navigate("/")
+	} else {
+		status := status{LoggedIn: false}
+		app.SessionStorage.Set("status", status)
 	}
-	status := status{LoggedIn: false}
-	app.SessionStorage.Set("status", status)
+}
+
+func loginUser(username, password string) bool {
+	log.Println(username)
+	log.Println(password)
+	users := getUsers()
+	if val, ok := users[username]; ok {
+		log.Println(val)
+		return checkPasswordHash(password, val)
+	}
+
+	return false
+}
+
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 func main() {
