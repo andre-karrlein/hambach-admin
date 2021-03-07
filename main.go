@@ -42,8 +42,8 @@ func main() {
 		Title:       "Hambach Admin",
 		Description: "Admin tools for Spvgg Hambach website",
 		Icon: app.Icon{
-			Default:    "https://storage.googleapis.com/hambach/IMG_0265.JPG", // Specify default favicon.
-			AppleTouch: "https://storage.googleapis.com/hambach/IMG_0265.JPG", // Specify icon on IOS devices.
+			Default:    "https://storage.googleapis.com/hambach/hambach_admin_app_logo.png", // Specify default favicon.
+			AppleTouch: "https://storage.googleapis.com/hambach/hambach_admin_app_logo.png", // Specify icon on IOS devices.
 		},
 		Styles: []string{
 			"https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css",
@@ -63,7 +63,36 @@ func contentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(http.StatusOK)
 
+	keys, ok := r.URL.Query()["id"]
+
+	if !ok || len(keys[0]) < 1 {
 	contentJSON, err := json.Marshal(loadContent())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Write(contentJSON)
+		return
+	}
+
+	id := keys[0]
+
+	contentJSON, err := json.Marshal(loadArticle(id))
+	if err != nil {
+		log.Fatal(err)
+}
+
+	w.Write(contentJSON)
+}
+
+func itemHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK)
+
+	id := "1"
+
+	contentJSON, err := json.Marshal(loadArticle(id))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -95,6 +124,21 @@ func loadContent() []Content {
 	}
 
 	return content
+}
+
+func loadArticle(id string) Content {
+	ctx := context.Background()
+	client := createClient(ctx)
+	defer client.Close()
+
+	result, err := client.Collection("articles").Doc(id).Get(ctx)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	var c Content
+	result.DataTo(&c)
+
+	return c
 }
 
 func createClient(ctx context.Context) *firestore.Client {

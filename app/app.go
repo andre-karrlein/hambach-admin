@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
 )
@@ -27,9 +28,10 @@ type home struct {
 type article struct {
 	app.Compo
 
-	content []Content
-	edit    bool
-	article string
+	content   []Content
+	edit      bool
+	articleID string
+	item      Content
 }
 
 const hash = "$2y$14$7aNuDEs7G6KxyYZLShEHlOpY4cjxV4kizm3noGFNBW11dvJdgtp3G"
@@ -40,13 +42,6 @@ func GetUsers() map[string]string {
 		"akarrlein": hash,
 		"pgeissler": hash,
 	}
-}
-
-type experience struct {
-	Role      string `json:"role"`
-	Company   string `json:"company"`
-	City      string `json:"city"`
-	Timeframe string `json:"timeframe"`
 }
 
 // Content struct
@@ -74,7 +69,7 @@ func (h *home) Render() app.UI {
 	return app.Div().Body(
 		&navbar{},
 		app.Section().Class("section").Body(
-			app.Body().Body(
+			app.Body().Class("has-navbar-fixed-top").Body(
 				app.Div().Class("container").Body(
 					&article{},
 				),
@@ -90,7 +85,7 @@ func (n *navbar) OnClick(ctx app.Context, e app.Event) {
 }
 
 func (n *navbar) Render() app.UI {
-	return app.Nav().Class("navbar is-success").Body(
+	return app.Nav().Class("navbar is-success is-fixed-top").Body(
 		app.Div().Class("navbar-brand").Body(
 			app.A().Class("navbar-item").Href("/").Body(
 				app.Img().Src("https://storage.googleapis.com/hambach/IMG_0265.JPG"),
@@ -127,51 +122,80 @@ func (n *navbar) onClick(ctx app.Context, e app.Event) {
 }
 
 func (a *article) Render() app.UI {
-	if !a.edit {
-		go a.doRequest()
-
+	if a.edit {
+		go a.doItemRequest(a.articleID)
 		return app.Div().Body(
-			app.Range(a.content).Slice(func(i int) app.UI {
+			app.Button().Class("button").Text("Zurück").OnClick(a.onClick),
+			app.Div().Class("box").Body(
+				app.Strong().Text(a.item.Title),
+				app.Br(),
+				app.Small().Text(a.item.ID),
+				app.Br(),
+				app.Text(a.item.Type),
+				app.Br(),
+				app.Text(a.item.Image),
+				app.Br(),
+				app.Text(a.item.Date),
+				app.Br(),
+				app.Text(a.item.Category),
+				app.Br(),
+				app.Text(a.item.Creator),
+				app.Br(),
+				app.Text(a.item.Content),
+				app.Br(),
+				app.Text(a.item.Active),
+				app.Br(),
+				app.Text(a.item.Link),
+			),
+		)
+	}
+	go a.doRequest("")
 
-				return app.Div().Class("box").Body(
-					app.Article().Class("media").Body(
-						app.Div().Class("media-left").Body(
-							app.Figure().Class("image is-64x64").Body(
-								app.Img().Src(a.content[i].Image),
-							),
+	return app.Div().Body(
+		app.Range(a.content).Slice(func(i int) app.UI {
+
+			return app.Div().Class("box").Body(
+				app.Article().Class("media").Body(
+					app.Div().Class("media-left").Body(
+						app.Figure().Class("image is-64x64").Body(
+							app.Img().Src(a.content[i].Image),
 						),
-						app.Div().Class("media-content").Body(
-							app.Div().Class("content").Body(
-								app.Strong().Text(a.content[i].Title),
-								app.Br(),
-								app.Text(a.content[i].Type),
-							),
-							app.Nav().Class("level is-mobile").Body(
-								app.Div().Class("level-left").Body(
-									app.Div().Class("level-item").Body(
-										app.Span().Class("icon is-small").Body(
-											app.I().Class("fas fa-pen"),
-										).OnClick(a.onClick),
-									),
+					),
+					app.Div().Class("media-content").Body(
+						app.Div().Class("content").Body(
+							app.Strong().Text(a.content[i].Title),
+							app.Br(),
+							app.Text(a.content[i].Type),
+						),
+						app.Nav().Class("level is-mobile").Body(
+							app.Div().Class("level-left").Body(
+								app.Div().Class("level-item").Body(
+									app.Span().Class("icon is-small").ID(strconv.Itoa(a.content[i].ID)).Body(
+										app.I().Class("fas fa-pen"),
+									).OnClick(a.onClick),
 								),
 							),
 						),
 					),
-				)
-			}),
-		)
-	}
-	return app.Div().Text("Edit")
+				),
+			)
+		}),
+	)
 }
 
 func (a *article) onClick(ctx app.Context, e app.Event) {
-	a.edit = true
+	a.articleID = ctx.JSSrc.Get("id").String()
+	if a.edit {
+		a.edit = false
+	} else {
+		a.edit = true
+	}
 
 	a.Update()
 }
 
-func (a *article) doRequest() {
-	resp, err := http.Get("/api/v1/content")
+func (a *article) doRequest(uri string) {
+	resp, err := http.Get("/api/v1/content" + uri)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -193,6 +217,33 @@ func (a *article) doRequest() {
 func (a *article) updateResponse(content []Content) {
 	app.Dispatch(func() { // Ensures response field is updated on UI goroutine.
 		a.content = content
+		a.Update()
+	})
+}
+
+func (a *article) doItemRequest(id string) {
+	resp, err := http.Get("/api/v1/content?id=" + id)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//Convert the body to type string
+	sb := string(body)
+
+	var content Content
+	json.Unmarshal([]byte(sb), &content)
+
+	a.updateItemResponse(content)
+}
+
+func (a *article) updateItemResponse(content Content) {
+	app.Dispatch(func() { // Ensures response field is updated on UI goroutine.
+		a.item = content
 		a.Update()
 	})
 }
