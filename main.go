@@ -1,11 +1,29 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 
+	"cloud.google.com/go/firestore"
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
+	"google.golang.org/api/iterator"
 )
+
+// Content struct
+type Content struct {
+	ID       int
+	Title    string
+	Date     string
+	Category string
+	Type     string
+	Image    string
+	Creator  string
+	Content  string
+	Active   string
+	Link     string
+}
 
 // The main function is the entry of the server. It is where the HTTP handler
 // that serves the UI is defined and where the server is started.
@@ -33,9 +51,60 @@ func main() {
 			"/web/css/main.css",
 		},
 	})
+	http.HandleFunc("/api/v1/content", contentHandler)
 
-	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func contentHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.WriteHeader(http.StatusOK)
+
+	contentJSON, err := json.Marshal(loadContent())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Write(contentJSON)
+}
+
+func loadContent() []Content {
+	ctx := context.Background()
+	client := createClient(ctx)
+	defer client.Close()
+
+	var content []Content
+
+	iter := client.Collection("articles").OrderBy("id", firestore.Desc).Documents(ctx)
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			log.Fatalf("Failed to iterate: %v", err)
+		}
+
+		var c Content
+		doc.DataTo(&c)
+
+		content = append(content, c)
+	}
+
+	return content
+}
+
+func createClient(ctx context.Context) *firestore.Client {
+	// Sets your Google Cloud Platform project ID.
+	projectID := "hambach" // os.Getenv("PROJECT_ID")
+
+	client, err := firestore.NewClient(ctx, projectID)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	return client
 }
