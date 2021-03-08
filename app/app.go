@@ -124,28 +124,70 @@ func (n *navbar) onClick(ctx app.Context, e app.Event) {
 func (a *article) Render() app.UI {
 	if a.edit {
 		go a.doItemRequest(a.articleID)
+
 		return app.Div().Body(
 			app.Button().Class("button").Text("Zurück").OnClick(a.onClick),
-			app.Div().Class("box").Body(
-				app.Strong().Text(a.item.Title),
+			app.Br(),
+			app.Br(),
+			app.Form().Class("box").OnSubmit(a.OnSubmit).Body(
+				app.Small().Text(a.item.ID).ID("id"),
 				app.Br(),
-				app.Small().Text(a.item.ID),
 				app.Br(),
-				app.Text(a.item.Type),
-				app.Br(),
-				app.Text(a.item.Image),
-				app.Br(),
-				app.Text(a.item.Date),
-				app.Br(),
-				app.Text(a.item.Category),
-				app.Br(),
-				app.Text(a.item.Creator),
-				app.Br(),
-				app.Text(a.item.Content),
-				app.Br(),
-				app.Text(a.item.Active),
-				app.Br(),
-				app.Text(a.item.Link),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Titel"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("text").Value(a.item.Title).ID("title"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Link im Titel?"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("text").Value(a.item.Link).ID("link"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Titelbild"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("text").Value(a.item.Image).ID("image"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Kategorie"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("text").Value(a.item.Category).ID("category"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Datum"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("date").Value(a.item.Date).ID("date"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Ersteller ID"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("text").Value(a.item.Creator).ID("creator"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Typ"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("text").Value(a.item.Type).ID("type"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Inhalt"),
+					app.Div().Class("control").Body(
+						app.Textarea().Class("textarea").Text(a.item.Content).ID("content"),
+					),
+				),
+				app.Div().Class("field").Body(
+					app.Label().Class("label").Text("Aktiviert"),
+					app.Div().Class("control").Body(
+						app.Input().Class("input").Type("text").Value(a.item.Active).ID("active"),
+					),
+				),
+				app.Button().Class("button is-primary").Text("Speichern").Type("submit"),
 			),
 		)
 	}
@@ -181,6 +223,35 @@ func (a *article) Render() app.UI {
 			)
 		}),
 	)
+}
+
+func (a *article) OnSubmit(ctx app.Context, e app.Event) {
+	e.PreventDefault()
+	/*id := app.Window().GetElementByID("id").Get("textContent").Int()
+	title := app.Window().GetElementByID("title").Get("value").String()
+	link := app.Window().GetElementByID("link").Get("value").String()
+	image := app.Window().GetElementByID("image").Get("value").String()
+	category := app.Window().GetElementByID("category").Get("value").String()
+	date := app.Window().GetElementByID("date").Get("value").String()
+	creator := app.Window().GetElementByID("creator").Get("value").String()
+	contentType := app.Window().GetElementByID("type").Get("value").String()
+	content := app.Window().GetElementByID("content").Get("textContent").String()
+	active := app.Window().GetElementByID("active").Get("value").String()
+
+	article := Content{
+		id,
+		title,
+		date,
+		category,
+		contentType,
+		image,
+		creator,
+		content,
+		active,
+		link,
+	}
+
+	*/
 }
 
 func (a *article) onClick(ctx app.Context, e app.Event) {
