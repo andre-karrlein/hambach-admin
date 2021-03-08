@@ -34,6 +34,7 @@ type article struct {
 	loading   bool
 	articleID string
 	item      Content
+	nextID    string
 }
 
 const hash = "$2y$14$7aNuDEs7G6KxyYZLShEHlOpY4cjxV4kizm3noGFNBW11dvJdgtp3G"
@@ -198,11 +199,10 @@ func (a *article) Render() app.UI {
 			),
 		)
 	}
-	go a.doRequest("")
+	go a.doRequest()
 
 	return app.Div().Body(
-		// strconv.Itoa(a.content[0].ID+1)
-		app.Button().Class("button is-success").ID("100").Text("Neuer Artikel").OnClick(a.newArticle),
+		app.Button().Class("button is-success").ID(a.nextID).Text("Neuer Artikel").OnClick(a.newArticle),
 		app.Br(),
 		app.Br(),
 		app.Range(a.content).Slice(func(i int) app.UI {
@@ -305,8 +305,8 @@ func (a *article) getDefaultItem(articleID string) {
 	}
 }
 
-func (a *article) doRequest(uri string) {
-	resp, err := http.Get("/api/v1/content" + uri)
+func (a *article) doRequest() {
+	resp, err := http.Get("/api/v1/content")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -326,8 +326,9 @@ func (a *article) doRequest(uri string) {
 }
 
 func (a *article) updateResponse(content []Content) {
-	app.Dispatch(func() { // Ensures response field is updated on UI goroutine.
+	app.Dispatch(func() {
 		a.content = content
+		a.nextID = strconv.Itoa(content[0].ID + 1)
 		a.Update()
 	})
 }
@@ -353,7 +354,7 @@ func (a *article) doItemRequest(id string) {
 }
 
 func (a *article) updateItemResponse(content Content) {
-	app.Dispatch(func() { // Ensures response field is updated on UI goroutine.
+	app.Dispatch(func() {
 		a.item = content
 		a.Update()
 	})
