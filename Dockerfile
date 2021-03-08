@@ -3,7 +3,7 @@ FROM golang:alpine as builder
 WORKDIR /go/build/
 RUN mkdir app
 COPY main.go .
-COPY app/*.go app/.
+COPY app/*.go app/
 COPY go.mod .
 COPY go.sum .
 COPY Makefile .
