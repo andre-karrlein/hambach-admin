@@ -6,7 +6,6 @@ COPY main.go .
 COPY app/*.go app/
 COPY go.mod .
 COPY go.sum .
-COPY Makefile .
 
 RUN go mod download
 RUN GOARCH=wasm GOOS=js go build -o web/app.wasm app/*.go
