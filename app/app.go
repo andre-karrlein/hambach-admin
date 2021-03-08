@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
@@ -30,6 +31,7 @@ type article struct {
 
 	content   []Content
 	edit      bool
+	loading   bool
 	articleID string
 	item      Content
 }
@@ -123,7 +125,11 @@ func (n *navbar) onClick(ctx app.Context, e app.Event) {
 
 func (a *article) Render() app.UI {
 	if a.edit {
-		go a.doItemRequest(a.articleID)
+		if a.loading {
+			go a.doItemRequest(a.articleID)
+		} else {
+			a.getDefaultItem(a.articleID)
+		}
 
 		return app.Div().Body(
 			app.Button().Class("button").Text("Zurück").OnClick(a.onClick),
@@ -149,6 +155,7 @@ func (a *article) Render() app.UI {
 					app.Label().Class("label").Text("Titelbild"),
 					app.Div().Class("control").Body(
 						app.Input().Class("input").Type("text").Value(a.item.Image).ID("image"),
+						//https://storage.googleapis.com/hambach/hambach_logo.png
 					),
 				),
 				app.Div().Class("field").Body(
@@ -164,7 +171,7 @@ func (a *article) Render() app.UI {
 					),
 				),
 				app.Div().Class("field").Body(
-					app.Label().Class("label").Text("Ersteller ID"),
+					app.Label().Class("label").Text("Ersteller"),
 					app.Div().Class("control").Body(
 						app.Input().Class("input").Type("text").Value(a.item.Creator).ID("creator"),
 					),
@@ -194,9 +201,17 @@ func (a *article) Render() app.UI {
 	go a.doRequest("")
 
 	return app.Div().Body(
+		// strconv.Itoa(a.content[0].ID+1)
+		app.Button().Class("button is-success").ID("100").Text("Neuer Artikel").OnClick(a.newArticle),
+		app.Br(),
+		app.Br(),
 		app.Range(a.content).Slice(func(i int) app.UI {
+			color := ""
+			if a.content[i].Type == "article" {
+				color = "lightgreen"
+			}
 
-			return app.Div().Class("box").Body(
+			return app.Div().Class("box").Style("background-color", color).Body(
 				app.Article().Class("media").Body(
 					app.Div().Class("media-left").Body(
 						app.Figure().Class("image is-64x64").Body(
@@ -205,7 +220,8 @@ func (a *article) Render() app.UI {
 					),
 					app.Div().Class("media-content").Body(
 						app.Div().Class("content").Body(
-							app.Strong().Text(a.content[i].Title),
+							app.Small().Text(a.content[i].ID),
+							app.Strong().Text(" "+a.content[i].Title),
 							app.Br(),
 							app.Text(a.content[i].Type),
 						),
@@ -227,7 +243,7 @@ func (a *article) Render() app.UI {
 
 func (a *article) OnSubmit(ctx app.Context, e app.Event) {
 	e.PreventDefault()
-	/*id := app.Window().GetElementByID("id").Get("textContent").Int()
+	id := app.Window().GetElementByID("id").Get("textContent").String()
 	title := app.Window().GetElementByID("title").Get("value").String()
 	link := app.Window().GetElementByID("link").Get("value").String()
 	image := app.Window().GetElementByID("image").Get("value").String()
@@ -238,31 +254,55 @@ func (a *article) OnSubmit(ctx app.Context, e app.Event) {
 	content := app.Window().GetElementByID("content").Get("textContent").String()
 	active := app.Window().GetElementByID("active").Get("value").String()
 
-	article := Content{
-		id,
-		title,
-		date,
-		category,
-		contentType,
-		image,
-		creator,
-		content,
-		active,
-		link,
+	data := url.Values{
+		"id":          {id},
+		"title":       {title},
+		"date":        {date},
+		"category":    {category},
+		"contentType": {contentType},
+		"image":       {image},
+		"creator":     {creator},
+		"content":     {content},
+		"active":      {active},
+		"link":        {link},
 	}
 
-	*/
+	_, err := http.PostForm("/api/v1/content/save", data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	a.edit = false
+	a.Update()
 }
 
 func (a *article) onClick(ctx app.Context, e app.Event) {
 	a.articleID = ctx.JSSrc.Get("id").String()
 	if a.edit {
 		a.edit = false
+		a.loading = false
 	} else {
 		a.edit = true
+		a.loading = true
 	}
 
 	a.Update()
+}
+
+func (a *article) newArticle(ctx app.Context, e app.Event) {
+	a.articleID = ctx.JSSrc.Get("id").String()
+	a.edit = true
+	a.loading = false
+
+	a.Update()
+}
+
+func (a *article) getDefaultItem(articleID string) {
+	contentID, _ := strconv.Atoi(articleID)
+	a.item = Content{
+		ID:      contentID,
+		Image:   "https://storage.googleapis.com/hambach/hambach_logo.png",
+		Content: "<div class=\"matches\"><p></p></div>",
+	}
 }
 
 func (a *article) doRequest(uri string) {

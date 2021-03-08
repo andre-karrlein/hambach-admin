@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"cloud.google.com/go/firestore"
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
@@ -23,6 +25,19 @@ type Content struct {
 	Content  string
 	Active   string
 	Link     string
+}
+
+type article struct {
+	ID       int    `firestore:"id,omitempty"`
+	Title    string `firestore:"title,omitempty"`
+	Date     string `firestore:"date,omitempty"`
+	Category string `firestore:"category,omitempty"`
+	Type     string `firestore:"type,omitempty"`
+	Image    string `firestore:"image,omitempty"`
+	Creator  string `firestore:"creator,omitempty"`
+	Content  string `firestore:"content,omitempty"`
+	Active   string `firestore:"active,omitempty"`
+	Link     string `firestore:"link,omitempty"`
 }
 
 // The main function is the entry of the server. It is where the HTTP handler
@@ -52,9 +67,53 @@ func main() {
 		},
 	})
 	http.HandleFunc("/api/v1/content", contentHandler)
+	http.HandleFunc("/api/v1/content/save", saveHandler)
 
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
+		if err := r.ParseForm(); err != nil {
+			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			return
+		}
+		fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
+		id := r.FormValue("id")
+		title := r.FormValue("title")
+		date := r.FormValue("date")
+		category := r.FormValue("category")
+		contentType := r.FormValue("contentType")
+		image := r.FormValue("image")
+		creator := r.FormValue("creator")
+		content := r.FormValue("content")
+		active := r.FormValue("active")
+		link := r.FormValue("link")
+
+		articleID, _ := strconv.Atoi(id)
+
+		article := article{
+			ID:       articleID,
+			Title:    title,
+			Date:     date,
+			Category: category,
+			Image:    image,
+			Type:     contentType,
+			Creator:  creator,
+			Content:  content,
+			Active:   active,
+			Link:     link,
+		}
+
+		saveArticle(article)
+
+		w.WriteHeader(http.StatusCreated)
+	} else {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	}
 }
 
@@ -66,31 +125,16 @@ func contentHandler(w http.ResponseWriter, r *http.Request) {
 	keys, ok := r.URL.Query()["id"]
 
 	if !ok || len(keys[0]) < 1 {
-	contentJSON, err := json.Marshal(loadContent())
-	if err != nil {
-		log.Fatal(err)
-	}
+		contentJSON, err := json.Marshal(loadContent())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	w.Write(contentJSON)
+		w.Write(contentJSON)
 		return
 	}
 
 	id := keys[0]
-
-	contentJSON, err := json.Marshal(loadArticle(id))
-	if err != nil {
-		log.Fatal(err)
-}
-
-	w.Write(contentJSON)
-}
-
-func itemHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.WriteHeader(http.StatusOK)
-
-	id := "1"
 
 	contentJSON, err := json.Marshal(loadArticle(id))
 	if err != nil {
@@ -139,6 +183,18 @@ func loadArticle(id string) Content {
 	result.DataTo(&c)
 
 	return c
+}
+
+func saveArticle(article article) {
+	ctx := context.Background()
+	client := createClient(ctx)
+	defer client.Close()
+
+	_, err := client.Collection("articles").Doc(strconv.Itoa(article.ID)).Set(ctx, article)
+	if err != nil {
+		// Handle any errors in an appropriate way, such as returning them.
+		log.Printf("An error has occurred: %s", err)
+	}
 }
 
 func createClient(ctx context.Context) *firestore.Client {
