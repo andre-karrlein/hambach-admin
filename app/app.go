@@ -126,11 +126,6 @@ func (n *navbar) onClick(ctx app.Context, e app.Event) {
 
 func (a *article) Render() app.UI {
 	if a.edit {
-		if a.loading {
-			go a.doItemRequest(a.articleID)
-		} else {
-			a.getDefaultItem(a.articleID)
-		}
 
 		return app.Div().Body(
 			app.Button().Class("button").Text("Zurück").OnClick(a.onClick),
@@ -199,7 +194,6 @@ func (a *article) Render() app.UI {
 			),
 		)
 	}
-	go a.doRequest()
 
 	return app.Div().Body(
 		app.Button().Class("button is-success").ID(a.nextID).Text("Neuer Artikel").OnClick(a.newArticle),
@@ -239,6 +233,10 @@ func (a *article) Render() app.UI {
 			)
 		}),
 	)
+}
+
+func (a *article) OnMount(ctx app.Context) {
+	go a.doRequest()
 }
 
 func (a *article) OnSubmit(ctx app.Context, e app.Event) {
@@ -283,6 +281,7 @@ func (a *article) onClick(ctx app.Context, e app.Event) {
 	} else {
 		a.edit = true
 		a.loading = true
+		go a.doItemRequest(a.articleID)
 	}
 
 	a.Update()
@@ -292,6 +291,7 @@ func (a *article) newArticle(ctx app.Context, e app.Event) {
 	a.articleID = ctx.JSSrc.Get("id").String()
 	a.edit = true
 	a.loading = false
+	a.getDefaultItem(a.articleID)
 
 	a.Update()
 }
