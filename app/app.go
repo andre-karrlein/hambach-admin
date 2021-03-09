@@ -308,13 +308,15 @@ func (a *article) getDefaultItem(articleID string) {
 func (a *article) doRequest() {
 	resp, err := http.Get("/api/v1/content")
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	//Convert the body to type string
 	sb := string(body)
@@ -336,13 +338,23 @@ func (a *article) updateResponse(content []Content) {
 func (a *article) doItemRequest(id string) {
 	resp, err := http.Get("/api/v1/content?id=" + id)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		contentKey := 0
+		contentID, _ := strconv.Atoi(id)
+		for index, element := range a.content {
+			if element.ID == contentID {
+				contentKey = index
+			}
+		}
+		a.updateItemResponse(a.content[contentKey])
+		return
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	//Convert the body to type string
 	sb := string(body)
