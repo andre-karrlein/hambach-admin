@@ -57,9 +57,9 @@ func main() {
 		Title:       "Hambach Admin",
 		Description: "Admin tools for Spvgg Hambach website",
 		Icon: app.Icon{
-			Default:    "https://storage.googleapis.com/hambach/hambach_admin_logo_192.png", // Specify default favicon.
-			Large:      "https://storage.googleapis.com/hambach/hambach_admin_logo_512.png",
-			AppleTouch: "https://storage.googleapis.com/hambach/hambach_admin_logo_192.png", // Specify icon on IOS devices.
+			Default:    "/web/images/hambach_admin_logo_192.png", // Specify default favicon.
+			Large:      "/web/images/hambach_admin_logo_512.png",
+			AppleTouch: "/web/images/hambach_admin_logo_192.png", // Specify icon on IOS devices.
 		},
 		Styles: []string{
 			"https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css",
