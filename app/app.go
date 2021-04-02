@@ -132,7 +132,7 @@ func (a *article) Render() app.UI {
 			app.Br(),
 			app.Br(),
 			app.Form().Class("box").OnSubmit(a.OnSubmit).Body(
-				app.Small().Text(a.item.ID).ID("id"),
+				app.Label().Text(a.item.ID).ID("id"),
 				app.Br(),
 				app.Br(),
 				app.Div().Class("field").Body(
@@ -241,7 +241,7 @@ func (a *article) OnMount(ctx app.Context) {
 
 func (a *article) OnSubmit(ctx app.Context, e app.Event) {
 	e.PreventDefault()
-	id := app.Window().GetElementByID("id").Get("value").String()
+	id := app.Window().GetElementByID("id").Get("textContent").String()
 	title := app.Window().GetElementByID("title").Get("value").String()
 	link := app.Window().GetElementByID("link").Get("value").String()
 	image := app.Window().GetElementByID("image").Get("value").String()
@@ -270,7 +270,7 @@ func (a *article) OnSubmit(ctx app.Context, e app.Event) {
 		log.Fatal(err)
 	}
 	a.edit = false
-	a.Update()
+	a.doRequest()
 }
 
 func (a *article) onClick(ctx app.Context, e app.Event) {
