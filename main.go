@@ -83,7 +83,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
 			return
 		}
-		fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
+
 		id := r.FormValue("id")
 		title := r.FormValue("title")
 		date := r.FormValue("date")
