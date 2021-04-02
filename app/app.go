@@ -241,7 +241,7 @@ func (a *article) OnMount(ctx app.Context) {
 
 func (a *article) OnSubmit(ctx app.Context, e app.Event) {
 	e.PreventDefault()
-	id := app.Window().GetElementByID("id").Get("textContent").String()
+	id := app.Window().GetElementByID("id").Get("value").String()
 	title := app.Window().GetElementByID("title").Get("value").String()
 	link := app.Window().GetElementByID("link").Get("value").String()
 	image := app.Window().GetElementByID("image").Get("value").String()
@@ -249,7 +249,7 @@ func (a *article) OnSubmit(ctx app.Context, e app.Event) {
 	date := app.Window().GetElementByID("date").Get("value").String()
 	creator := app.Window().GetElementByID("creator").Get("value").String()
 	contentType := app.Window().GetElementByID("type").Get("value").String()
-	content := app.Window().GetElementByID("content").Get("textContent").String()
+	content := app.Window().GetElementByID("content").Get("value").String()
 	active := app.Window().GetElementByID("active").Get("value").String()
 
 	data := url.Values{
