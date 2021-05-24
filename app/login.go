@@ -39,11 +39,11 @@ func (l *login) OnSubmit(ctx app.Context, e app.Event) {
 	password := app.Window().GetElementByID("password").Get("value").String()
 
 	if loginUser(username, password) {
-		status := Status{LoggedIn: true}
+		status := Status{LoggedIn: true, User: username}
 		app.SessionStorage.Set("status", status)
 		app.Navigate("/")
 	} else {
-		status := Status{LoggedIn: false}
+		status := Status{LoggedIn: false, User: ""}
 		app.SessionStorage.Set("status", status)
 	}
 }

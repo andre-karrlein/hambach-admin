@@ -19,10 +19,23 @@ type navbar struct {
 
 // Status reflects the logged in status
 type Status struct {
-	LoggedIn bool `json:"loggedIn"`
+	LoggedIn bool   `json:"loggedIn"`
+	User     string `json:"user"`
 }
 
 type home struct {
+	app.Compo
+}
+
+type sidebar struct {
+	app.Compo
+}
+
+type metrics struct {
+	app.Compo
+}
+
+type articles struct {
 	app.Compo
 }
 
@@ -47,6 +60,13 @@ func GetUsers() map[string]string {
 	}
 }
 
+func GetNameOfUser() map[string]string {
+	return map[string]string{
+		"akarrlein": "Andre",
+		"pgeissler": "Patrick",
+	}
+}
+
 // Content struct
 type Content struct {
 	ID       int
@@ -65,7 +85,7 @@ func (h *home) Render() app.UI {
 	var status Status
 	app.SessionStorage.Get("status", &status)
 
-	if status.LoggedIn != true {
+	if !status.LoggedIn {
 		app.Navigate("/login")
 	}
 
@@ -74,8 +94,83 @@ func (h *home) Render() app.UI {
 		app.Section().Class("section").Body(
 			app.Body().Class("has-navbar-fixed-top").Body(
 				app.Div().Class("container").Body(
-					&article{},
+					app.Div().Class("columns").Body(
+						app.Div().Class("column is-one-fifth").Body(
+							&sidebar{},
+						),
+						app.Div().Class("column").Body(
+							app.H1().Text("Hallo "+GetNameOfUser()[status.User]),
+							app.P().Text("comming soon..."),
+						),
+					),
 				),
+			),
+		),
+	)
+}
+
+func (m *metrics) Render() app.UI {
+	var status Status
+	app.SessionStorage.Get("status", &status)
+
+	if !status.LoggedIn {
+		app.Navigate("/login")
+	}
+
+	return app.Div().Body(
+		&navbar{},
+		app.Section().Class("section").Body(
+			app.Body().Class("has-navbar-fixed-top").Body(
+				app.Div().Class("container").Body(
+					app.Div().Class("columns").Body(
+						app.Div().Class("column is-one-fifth").Body(
+							&sidebar{},
+						),
+						app.Div().Class("column").Body(
+							app.P().Text("comming soon..."),
+						),
+					),
+				),
+			),
+		),
+	)
+}
+
+func (a *articles) Render() app.UI {
+	var status Status
+	app.SessionStorage.Get("status", &status)
+
+	if !status.LoggedIn {
+		app.Navigate("/login")
+	}
+
+	return app.Div().Body(
+		&navbar{},
+		app.Section().Class("section").Body(
+			app.Body().Class("has-navbar-fixed-top").Body(
+				app.Div().Class("container").Body(
+					app.Div().Class("columns").Body(
+						app.Div().Class("column is-one-fifth").Body(
+							&sidebar{},
+						),
+						app.Div().Class("column").Body(
+							&article{},
+						),
+					),
+				),
+			),
+		),
+	)
+}
+
+func (s *sidebar) Render() app.UI {
+	return app.Aside().Class("menu").Body(
+		app.P().Class("menu-label").Text("Administration"),
+		app.Ul().Class("menu-list").Body(
+			app.Li().Body(
+				app.A().Href("/").Text("Dashboard"),
+				app.A().Href("/article").Text("Artikel"),
+				app.A().Href("/metrics").Text("Metriken"),
 			),
 		),
 	)
@@ -374,6 +469,8 @@ func (a *article) updateItemResponse(content Content) {
 
 func main() {
 	app.Route("/", &home{})
+	app.Route("/article", &articles{})
+	app.Route("/metrics", &metrics{})
 	app.Route("/login", &login{})
 	app.Run()
 }
