@@ -11,34 +11,6 @@ import (
 	"github.com/maxence-charriere/go-app/v7/pkg/app"
 )
 
-type navbar struct {
-	app.Compo
-
-	active string
-}
-
-// Status reflects the logged in status
-type Status struct {
-	LoggedIn bool   `json:"loggedIn"`
-	User     string `json:"user"`
-}
-
-type home struct {
-	app.Compo
-}
-
-type sidebar struct {
-	app.Compo
-}
-
-type metrics struct {
-	app.Compo
-}
-
-type articles struct {
-	app.Compo
-}
-
 type article struct {
 	app.Compo
 
@@ -48,23 +20,6 @@ type article struct {
 	articleID string
 	item      Content
 	nextID    string
-}
-
-const hash = "$2y$14$7aNuDEs7G6KxyYZLShEHlOpY4cjxV4kizm3noGFNBW11dvJdgtp3G"
-
-// GetUsers function to get all available users with password
-func GetUsers() map[string]string {
-	return map[string]string{
-		"akarrlein": hash,
-		"pgeissler": hash,
-	}
-}
-
-func GetNameOfUser() map[string]string {
-	return map[string]string{
-		"akarrlein": "Andre",
-		"pgeissler": "Patrick",
-	}
 }
 
 // Content struct
@@ -79,61 +34,6 @@ type Content struct {
 	Content  string
 	Active   string
 	Link     string
-}
-
-func (h *home) Render() app.UI {
-	var status Status
-	app.SessionStorage.Get("status", &status)
-
-	if !status.LoggedIn {
-		app.Navigate("/login")
-	}
-
-	return app.Div().Body(
-		&navbar{},
-		app.Section().Class("section").Body(
-			app.Body().Class("has-navbar-fixed-top").Body(
-				app.Div().Class("container").Body(
-					app.Div().Class("columns").Body(
-						app.Div().Class("column is-one-fifth").Body(
-							&sidebar{},
-						),
-						app.Div().Class("column").Body(
-							app.H1().Text("Hallo "+GetNameOfUser()[status.User]),
-							app.P().Text("comming soon..."),
-						),
-					),
-				),
-			),
-		),
-	)
-}
-
-func (m *metrics) Render() app.UI {
-	var status Status
-	app.SessionStorage.Get("status", &status)
-
-	if !status.LoggedIn {
-		app.Navigate("/login")
-	}
-
-	return app.Div().Body(
-		&navbar{},
-		app.Section().Class("section").Body(
-			app.Body().Class("has-navbar-fixed-top").Body(
-				app.Div().Class("container").Body(
-					app.Div().Class("columns").Body(
-						app.Div().Class("column is-one-fifth").Body(
-							&sidebar{},
-						),
-						app.Div().Class("column").Body(
-							app.P().Text("comming soon..."),
-						),
-					),
-				),
-			),
-		),
-	)
 }
 
 func (a *articles) Render() app.UI {
@@ -161,62 +61,6 @@ func (a *articles) Render() app.UI {
 			),
 		),
 	)
-}
-
-func (s *sidebar) Render() app.UI {
-	return app.Aside().Class("menu").Body(
-		app.P().Class("menu-label").Text("Administration"),
-		app.Ul().Class("menu-list").Body(
-			app.Li().Body(
-				app.A().Href("/").Text("Dashboard"),
-				app.A().Href("/article").Text("Artikel"),
-				app.A().Href("/metrics").Text("Metriken"),
-			),
-		),
-	)
-}
-
-func (n *navbar) OnClick(ctx app.Context, e app.Event) {
-	status := Status{LoggedIn: false}
-	app.SessionStorage.Set("status", status)
-	app.Navigate("/login")
-}
-
-func (n *navbar) Render() app.UI {
-	return app.Nav().Class("navbar is-success is-fixed-top").Body(
-		app.Div().Class("navbar-brand").Body(
-			app.A().Class("navbar-item").Href("/").Body(
-				app.Img().Src("https://storage.googleapis.com/hambach/IMG_0265.JPG"),
-				app.H1().Class("title title-brand").Text("ADMIN"),
-			),
-			app.Span().Class("navbar-burger").Class(n.active).Body(
-				app.Span(),
-				app.Span(),
-				app.Span(),
-			).OnClick(n.onClick),
-		),
-		app.Div().Class("navbar-menu").ID("navbarMenu").Class(n.active).Body(
-			app.Div().Class("navbar-start").Body(
-				app.Div().Class("navbar-item").Body(),
-			),
-			app.Div().Class("navbar-end").Body(
-				app.Div().Class("navbar-item").Body(
-					app.Div().Class("buttons").Body(
-						app.Button().Class("button is-danger").Text("Logout").OnClick(n.OnClick),
-					),
-				),
-			),
-		),
-	)
-}
-
-func (n *navbar) onClick(ctx app.Context, e app.Event) {
-	if n.active == "is-active" {
-		n.active = ""
-	} else {
-		n.active = "is-active"
-	}
-	n.Update()
 }
 
 func (a *article) Render() app.UI {
@@ -465,12 +309,4 @@ func (a *article) updateItemResponse(content Content) {
 		a.item = content
 		a.Update()
 	})
-}
-
-func main() {
-	app.Route("/", &home{})
-	app.Route("/article", &articles{})
-	app.Route("/metrics", &metrics{})
-	app.Route("/login", &login{})
-	app.Run()
 }

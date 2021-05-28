@@ -1,12 +1,22 @@
 package main
 
 import (
-	"github.com/maxence-charriere/go-app/v7/pkg/app"
+	"github.com/maxence-charriere/go-app/v8/pkg/app"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type login struct {
 	app.Compo
+}
+
+func (l *login) OnNav(ctx app.Context) {
+	var status Status
+
+	ctx.SessionStorage().Get("status", &status)
+
+	if status.LoggedIn {
+		ctx.Navigate("/home")
+	}
 }
 
 func (l *login) Render() app.UI {
@@ -40,11 +50,11 @@ func (l *login) OnSubmit(ctx app.Context, e app.Event) {
 
 	if loginUser(username, password) {
 		status := Status{LoggedIn: true, User: username}
-		app.SessionStorage.Set("status", status)
-		app.Navigate("/")
+		ctx.SessionStorage().Set("status", status)
+		ctx.Navigate("/home")
 	} else {
 		status := Status{LoggedIn: false, User: ""}
-		app.SessionStorage.Set("status", status)
+		ctx.SessionStorage().Set("status", status)
 	}
 }
 
