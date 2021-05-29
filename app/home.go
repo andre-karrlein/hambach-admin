@@ -40,7 +40,7 @@ func (h *home) Render() app.UI {
 							&sidebar{},
 						),
 						app.Div().Class("column").Body(
-							app.H1().Text("Hallo "+GetNameOfUser()[h.status.User]),
+							app.H1().Text("Hallo "+GetUsers()[h.status.User].name),
 							app.P().Text("comming soon test..."),
 						),
 					),

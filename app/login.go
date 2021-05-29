@@ -61,7 +61,7 @@ func (l *login) OnSubmit(ctx app.Context, e app.Event) {
 func loginUser(username, password string) bool {
 	users := GetUsers()
 	if val, ok := users[username]; ok {
-		return checkPasswordHash(password, val)
+		return checkPasswordHash(password, val.password)
 	}
 
 	return false
