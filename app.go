@@ -22,46 +22,7 @@ type article struct {
 	nextID    string
 }
 
-// Content struct
-type Content struct {
-	ID       int
-	Title    string
-	Date     string
-	Category string
-	Type     string
-	Image    string
-	Creator  string
-	Content  string
-	Active   string
-	Link     string
-}
 
-func (a *articles) Render() app.UI {
-	var status Status
-	app.SessionStorage.Get("status", &status)
-
-	if !status.LoggedIn {
-		app.Navigate("/login")
-	}
-
-	return app.Div().Body(
-		&navbar{},
-		app.Section().Class("section").Body(
-			app.Body().Class("has-navbar-fixed-top").Body(
-				app.Div().Class("container").Body(
-					app.Div().Class("columns").Body(
-						app.Div().Class("column is-one-fifth").Body(
-							&sidebar{},
-						),
-						app.Div().Class("column").Body(
-							&article{},
-						),
-					),
-				),
-			),
-		),
-	)
-}
 
 func (a *article) Render() app.UI {
 	if a.edit {
@@ -212,28 +173,6 @@ func (a *article) OnSubmit(ctx app.Context, e app.Event) {
 	a.doRequest()
 }
 
-func (a *article) onClick(ctx app.Context, e app.Event) {
-	a.articleID = ctx.JSSrc.Get("id").String()
-	if a.edit {
-		a.edit = false
-		a.loading = false
-	} else {
-		a.edit = true
-		a.loading = true
-		go a.doItemRequest(a.articleID)
-	}
-
-	a.Update()
-}
-
-func (a *article) newArticle(ctx app.Context, e app.Event) {
-	a.articleID = ctx.JSSrc.Get("id").String()
-	a.edit = true
-	a.loading = false
-	a.getDefaultItem(a.articleID)
-
-	a.Update()
-}
 
 func (a *article) getDefaultItem(articleID string) {
 	contentID, _ := strconv.Atoi(articleID)
@@ -244,35 +183,7 @@ func (a *article) getDefaultItem(articleID string) {
 	}
 }
 
-func (a *article) doRequest() {
-	resp, err := http.Get("/api/v1/content")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	//Convert the body to type string
-	sb := string(body)
-
-	var content []Content
-	json.Unmarshal([]byte(sb), &content)
-
-	a.updateResponse(content)
-}
-
-func (a *article) updateResponse(content []Content) {
-	app.Dispatch(func() {
-		a.content = content
-		a.nextID = strconv.Itoa(content[0].ID + 1)
-		a.Update()
-	})
-}
 
 func (a *article) doItemRequest(id string) {
 	resp, err := http.Get("/api/v1/content?id=" + id)
