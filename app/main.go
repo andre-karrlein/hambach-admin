@@ -12,6 +12,7 @@ func main() {
 	app.Route("/home", &home{})
 	app.Route("/articles", &articles{})
 	app.Route("/metrics", &metrics{})
+	app.RouteWithRegexp("^/editor.*", &editor{})
 
 	app.RunWhenOnBrowser()
 
@@ -30,6 +31,8 @@ func main() {
 			"/web/css/main.css",
 		},
 	})
+	http.HandleFunc("/api/v1/content", contentHandler)
+	http.HandleFunc("/api/v1/content/save", saveHandler)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
