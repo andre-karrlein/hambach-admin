@@ -21,6 +21,11 @@ func (a *articleList) edit(ctx app.Context, e app.Event) {
 	ctx.Navigate("/editor/" + articleId)
 }
 
+func (a *articleList) new(ctx app.Context, e app.Event) {
+	articleId := ctx.JSSrc.Get("id").String()
+	ctx.Navigate("/editor/" + articleId + "/new")
+}
+
 func (a *articleList) OnNav(ctx app.Context) {
 	// Launching a new goroutine:
 	ctx.Async(func() {
@@ -53,7 +58,7 @@ func (a *articleList) OnNav(ctx app.Context) {
 
 func (a *articleList) Render() app.UI {
 	return app.Div().Body(
-		app.Button().Class("button is-success").ID(a.nextID).Text("Neuer Artikel").OnClick(a.edit),
+		app.Button().Class("button is-success").ID(a.nextID).Text("Neuer Artikel").OnClick(a.new),
 		app.Br(),
 		app.Br(),
 		app.Range(a.content).Slice(func(i int) app.UI {
