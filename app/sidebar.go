@@ -12,7 +12,7 @@ func (s *sidebar) Render() app.UI {
 		app.Ul().Class("menu-list").Body(
 			app.Li().Body(
 				app.A().Href("/").Text("Dashboard"),
-				app.A().Href("/article").Text("Artikel"),
+				app.A().Href("/articles").Text("Artikel"),
 				app.A().Href("/metrics").Text("Metriken"),
 			),
 		),
