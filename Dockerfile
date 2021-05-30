@@ -2,14 +2,14 @@ FROM golang:alpine as builder
 
 WORKDIR /go/build/
 RUN mkdir app
-COPY main.go .
 COPY app/*.go app/
 COPY go.mod .
 COPY go.sum .
 
 RUN go mod download
-RUN GOARCH=wasm GOOS=js go build -o web/app.wasm app/*.go
-RUN go build -o hambach-admin
+
+RUN go build -o hambach-admin ./app
+RUN GOARCH=wasm GOOS=js go build -o web/app.wasm ./app
 
 FROM alpine:3.6
 RUN apk --no-cache add ca-certificates

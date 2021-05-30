@@ -9,72 +9,8 @@ import (
 	"strconv"
 
 	"cloud.google.com/go/firestore"
-	"github.com/maxence-charriere/go-app/v7/pkg/app"
 	"google.golang.org/api/iterator"
 )
-
-// Content struct
-type Content struct {
-	ID       int
-	Title    string
-	Date     string
-	Category string
-	Type     string
-	Image    string
-	Creator  string
-	Content  string
-	Active   string
-	Link     string
-}
-
-type article struct {
-	ID       int    `firestore:"id,omitempty"`
-	Title    string `firestore:"title,omitempty"`
-	Date     string `firestore:"date,omitempty"`
-	Category string `firestore:"category,omitempty"`
-	Type     string `firestore:"type,omitempty"`
-	Image    string `firestore:"image,omitempty"`
-	Creator  string `firestore:"creator,omitempty"`
-	Content  string `firestore:"content,omitempty"`
-	Active   string `firestore:"active,omitempty"`
-	Link     string `firestore:"link,omitempty"`
-}
-
-// The main function is the entry of the server. It is where the HTTP handler
-// that serves the UI is defined and where the server is started.
-//
-// Note that because main.go and app.go are built for different architectures,
-// this main() function is not in conflict with the one in
-// app.go.
-func main() {
-	// app.Handler is a standard HTTP handler that serves the UI and its
-	// resources to make it work in a web browser.
-	//
-	// It implements the http.Handler interface so it can seamlessly be used
-	// with the Go HTTP standard library.
-	http.Handle("/", &app.Handler{
-		Name:        "Hambach Admin",
-		Title:       "Hambach Admin",
-		Description: "Admin tools for Spvgg Hambach website",
-		Icon: app.Icon{
-			Default:    "/web/images/hambach_admin_logo_192.png", // Specify default favicon.
-			Large:      "/web/images/hambach_admin_logo_512.png",
-			AppleTouch: "/web/images/hambach_admin_logo_192.png", // Specify icon on IOS devices.
-		},
-		Styles: []string{
-			"https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css",
-			"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css",
-			"/web/css/main.css",
-		},
-	})
-	http.HandleFunc("/api/v1/content", contentHandler)
-	http.HandleFunc("/api/v1/content/save", saveHandler)
-
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
