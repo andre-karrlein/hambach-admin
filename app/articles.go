@@ -6,6 +6,16 @@ type articles struct {
 	app.Compo
 }
 
+func (a *articles) OnNav(ctx app.Context) {
+	var status Status
+
+	ctx.SessionStorage().Get("status", &status)
+
+	if !status.LoggedIn {
+		ctx.Navigate("/")
+	}
+}
+
 func (a *articles) Render() app.UI {
 	return app.Div().Body(
 		&navbar{},
