@@ -18,7 +18,7 @@ type articleList struct {
 
 func (a *articleList) edit(ctx app.Context, e app.Event) {
 	articleId := ctx.JSSrc.Get("id").String()
-	ctx.Navigate("/editor/" + articleId)
+	ctx.Navigate("/editor/" + articleId +"/edit")
 }
 
 func (a *articleList) new(ctx app.Context, e app.Event) {
