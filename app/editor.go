@@ -112,6 +112,40 @@ func (e *editor) OnSubmit(ctx app.Context, ev app.Event) {
 	ctx.Navigate("/articles")
 }
 
+func (e *editor) OnDeactivate(ctx app.Context, ev app.Event) {
+	ev.PreventDefault()
+	id := app.Window().GetElementByID("id").Get("textContent").String()
+	title := app.Window().GetElementByID("title").Get("value").String()
+	link := app.Window().GetElementByID("link").Get("value").String()
+	image := app.Window().GetElementByID("image").Get("value").String()
+	category := app.Window().GetElementByID("category").Get("value").String()
+	date := app.Window().GetElementByID("date").Get("value").String()
+	creator := app.Window().GetElementByID("creator").Get("value").String()
+	contentType := "content"
+	content := app.Window().GetElementByID("content").Get("value").String()
+	active := app.Window().GetElementByID("active").Get("value").String()
+
+	data := url.Values{
+		"id":          {id},
+		"title":       {title},
+		"date":        {date},
+		"category":    {category},
+		"contentType": {contentType},
+		"image":       {image},
+		"creator":     {creator},
+		"content":     {content},
+		"active":      {active},
+		"link":        {link},
+	}
+
+	_, err := http.PostForm("/api/v1/content/save", data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ctx.Navigate("/articles")
+}
+
 func (e *editor) Render() app.UI {
 	return app.Div().Body(
 		&navbar{},
@@ -124,7 +158,11 @@ func (e *editor) Render() app.UI {
 						),
 						app.Div().Class("column").Body(
 							app.Div().Body(
-								app.Button().Class("button").Text("Zurück").OnClick(e.onClick),
+								app.Div().Class("buttons").Body(
+									app.Button().Class("button").Text("Zurück").OnClick(e.onClick),
+									app.Button().Class("button is-danger").Text("Deaktivieren").OnClick(e.OnDeactivate),
+									app.Button().Class("button is-success").Text("Speichern").OnClick(e.OnSubmit),
+								),
 								app.Br(),
 								app.Br(),
 								app.Form().Class("box").OnSubmit(e.OnSubmit).Body(
