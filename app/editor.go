@@ -80,40 +80,27 @@ func (e *editor) getDefaultItem(articleID string) {
 
 func (e *editor) OnSubmit(ctx app.Context, ev app.Event) {
 	ev.PreventDefault()
-	id := app.Window().GetElementByID("id").Get("textContent").String()
-	title := app.Window().GetElementByID("title").Get("value").String()
-	link := app.Window().GetElementByID("link").Get("value").String()
-	image := app.Window().GetElementByID("image").Get("value").String()
-	category := app.Window().GetElementByID("category").Get("value").String()
-	date := app.Window().GetElementByID("date").Get("value").String()
-	creator := app.Window().GetElementByID("creator").Get("value").String()
-	contentType := app.Window().GetElementByID("type").Get("value").String()
 	content := app.Window().GetElementByID("content").Get("value").String()
-	active := app.Window().GetElementByID("active").Get("value").String()
-
-	data := url.Values{
-		"id":          {id},
-		"title":       {title},
-		"date":        {date},
-		"category":    {category},
-		"contentType": {contentType},
-		"image":       {image},
-		"creator":     {creator},
-		"content":     {content},
-		"active":      {active},
-		"link":        {link},
-	}
-
-	_, err := http.PostForm("/api/v1/content/save", data)
-	if err != nil {
-		log.Fatal(err)
-	}
+	e.save(content)
 
 	ctx.Navigate("/articles")
 }
 
 func (e *editor) OnDeactivate(ctx app.Context, ev app.Event) {
 	ev.PreventDefault()
+	e.save("content")
+
+	ctx.Navigate("/articles")
+}
+
+func (e *editor) OnActivate(ctx app.Context, ev app.Event) {
+	ev.PreventDefault()
+	e.save("article")
+
+	ctx.Navigate("/articles")
+}
+
+func (e *editor) save(contentType string) {
 	id := app.Window().GetElementByID("id").Get("textContent").String()
 	title := app.Window().GetElementByID("title").Get("value").String()
 	link := app.Window().GetElementByID("link").Get("value").String()
@@ -121,7 +108,6 @@ func (e *editor) OnDeactivate(ctx app.Context, ev app.Event) {
 	category := app.Window().GetElementByID("category").Get("value").String()
 	date := app.Window().GetElementByID("date").Get("value").String()
 	creator := app.Window().GetElementByID("creator").Get("value").String()
-	contentType := "content"
 	content := app.Window().GetElementByID("content").Get("value").String()
 	active := app.Window().GetElementByID("active").Get("value").String()
 
@@ -142,8 +128,6 @@ func (e *editor) OnDeactivate(ctx app.Context, ev app.Event) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	ctx.Navigate("/articles")
 }
 
 func (e *editor) Render() app.UI {
@@ -161,7 +145,7 @@ func (e *editor) Render() app.UI {
 								app.Div().Class("buttons").Body(
 									app.Button().Class("button").Text("Zurück").OnClick(e.onClick),
 									app.Button().Class("button is-danger").Text("Deaktivieren").OnClick(e.OnDeactivate),
-									app.Button().Class("button is-success").Text("Speichern").OnClick(e.OnSubmit),
+									app.Button().Class("button is-success").Text("Aktivieren").OnClick(e.OnActivate),
 								),
 								app.Br(),
 								app.Br(),
