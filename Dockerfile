@@ -1,4 +1,4 @@
-FROM golang:alpine as builder
+FROM golang:1.16-alpine as builder
 
 WORKDIR /go/build/
 RUN mkdir app
@@ -11,7 +11,7 @@ RUN go mod download
 RUN go build -o hambach-admin ./app
 RUN GOARCH=wasm GOOS=js go build -o web/app.wasm ./app
 
-FROM alpine:3.6
+FROM golang:1.16-alpine
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /app/
