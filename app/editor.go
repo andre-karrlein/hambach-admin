@@ -80,7 +80,7 @@ func (e *editor) getDefaultItem(articleID string) {
 
 func (e *editor) OnSubmit(ctx app.Context, ev app.Event) {
 	ev.PreventDefault()
-	content := app.Window().GetElementByID("content").Get("value").String()
+	content := app.Window().GetElementByID("type").Get("value").String()
 	e.save(content)
 
 	ctx.Navigate("/articles")
