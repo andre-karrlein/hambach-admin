@@ -1,11 +1,10 @@
 package main
 
 import (
-	"log"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
 
@@ -18,26 +17,24 @@ type fileList struct {
 func (fileList *fileList) OnNav(ctx app.Context) {
 	// Launching a new goroutine:
 	ctx.Async(func() {
-		sess, _ := session.NewSession(&aws.Config{
-			Region: aws.String("eu-central-1")},
-		)
-
-		// Create S3 service client
-		svc := s3.New(sess)
-
-		resp, err := svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String("hambach")})
+		app_key := app.Getenv("READ_KEY")
+		r, err := http.Get("https://api.spvgg-hambach.de/api/v1/files?appkey=" + app_key)
 		if err != nil {
-			log.Fatalln(err)
+			app.Log(err)
+			return
 		}
+		defer r.Body.Close()
+
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			app.Log(err)
+			return
+		}
+
+		sb := string(b)
 
 		var files []File
-		for _, item := range resp.Contents {
-			files = append(files, File{
-				ID:           *item.ETag,
-				Key:          *item.Key,
-				LastModified: item.LastModified.String(),
-			})
-		}
+		json.Unmarshal([]byte(sb), &files)
 
 		fileList.files = files
 		fileList.Update()
