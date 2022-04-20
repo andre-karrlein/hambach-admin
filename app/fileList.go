@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
@@ -47,17 +46,12 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 }
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
-	files := app.Window().GetElementByID("uploadedFile").Get("files").Get("0")
-	f, _ := os.Open(files.Get("name").String())
-
-	// Read entire JPG into byte slice.
-	reader := bufio.NewReader(f)
-	content, _ := ioutil.ReadAll(reader)
+	file := app.Window().GetElementByID("uploadedFile").Get("files").Get("0")
 
 	// Encode as base64.
-	encoded := base64.StdEncoding.EncodeToString(content)
+	encoded := base64.StdEncoding.EncodeToString([]byte(file.String()))
 	uploadedData := UploadedFile{
-		Name: files.Get("name").String(),
+		Name: file.Get("name").String(),
 		Data: encoded,
 	}
 
