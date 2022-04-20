@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -28,6 +29,10 @@ func main() {
 			"https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css",
 			"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css",
 			"/web/css/main.css",
+		},
+		ThemeColor: "#008000",
+		Env: app.Environment{
+			"WRITE_KEY": os.Getenv("WRITE_KEY"),
 		},
 	})
 
