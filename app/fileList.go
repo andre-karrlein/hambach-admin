@@ -45,10 +45,8 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 }
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
-	file := app.Window().GetElementByID("uploadedFile")
-	log.Println(file)
-
-	log.Println(file.JSValue())
+	files := app.Window().GetElementByID("uploadedFile").Get("files")
+	log.Println(files)
 }
 
 func (fileList *fileList) OnDelete(ctx app.Context, e app.Event) {
