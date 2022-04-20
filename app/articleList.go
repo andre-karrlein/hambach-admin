@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sort"
+	"strconv"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -54,7 +55,9 @@ func (a *articleList) OnNav(ctx app.Context) {
 		}
 
 		sort.Slice(content, func(i, j int) bool {
-			return content[i].ID > content[j].ID
+			content_i, _ := strconv.Atoi(content[i].ID)
+			content_j, _ := strconv.Atoi(content[j].ID)
+			return content_i > content_j
 		})
 
 		a.content = content
