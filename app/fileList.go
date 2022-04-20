@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
@@ -41,9 +42,16 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 	})
 }
 
+func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
+	file := ctx.JSSrc().Get("uploadedFile")
+
+	log.Println(file)
+}
+
 func (fileList *fileList) Render() app.UI {
 	return app.Div().Body(
-		app.Button().Class("button is-success").Text("Neuer Upload"),
+		app.Input().Type("file").ID("uploadedFile").Name("uploadedFile"),
+		app.Button().Class("button is-success").Text("Neuer Upload").OnClick(fileList.OnUpload),
 		app.Br(),
 		app.Br(),
 		app.Range(fileList.files).Slice(func(i int) app.UI {
@@ -58,11 +66,16 @@ func (fileList *fileList) Render() app.UI {
 						app.Div().Class("content").Body(
 							app.Strong().Text(fileList.files[i].Key),
 						),
+						app.Div().Body(
+							app.Span().Class("is-small").Body(
+								app.Text("LINK: https://hambach.s3.eu-central-1.amazonaws.com/"+fileList.files[i].Key),
+							),
+						),
 						app.Nav().Class("level is-mobile").Body(
 							app.Div().Class("level-left").Body(
 								app.Div().Class("level-item").Body(
-									app.Span().Class("icon is-small").ID(fileList.files[i].ID).Body(
-										app.I().Class("fas fa-pen"),
+									app.Span().Class("icon is-small").ID(fileList.files[i].Key).Body(
+										app.I().Class("fas fa-trash"),
 									),
 								),
 							),
