@@ -1,15 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 
-	"github.com/maxence-charriere/go-app/v8/pkg/app"
+	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
 
 type editor struct {
@@ -27,7 +25,7 @@ func (e *editor) OnNav(ctx app.Context) {
 		ctx.Navigate("/")
 	}
 
-	urlPath := ctx.Page.URL().Path
+	urlPath := ctx.Page().URL().Path
 	path := strings.Split(urlPath, "/")
 	id := path[2]
 
@@ -38,29 +36,27 @@ func (e *editor) OnNav(ctx app.Context) {
 
 	// Launching a new goroutine:
 	ctx.Async(func() {
-		r, err := http.Get("/api/v1/content?id=" + id) // #TODO
+		app_key := app.Getenv("WRITE_KEY")
+		r, err := http.Get("https://api.spvgg-hambach.de/api/v1/content/" + id + "?appkey=" + app_key)
 		if err != nil {
 			app.Log(err)
 			return
 		}
 		defer r.Body.Close()
 
-		body, err := ioutil.ReadAll(r.Body)
+		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			app.Log(err)
 			return
 		}
 
-		// Storing HTTP response in component field:
-		ctx.Dispatch(func() {
-			sb := string(body)
+		sb := string(b)
 
-			var content Content
-			json.Unmarshal([]byte(sb), &content)
+		var content Content
+		json.Unmarshal([]byte(sb), &content)
 
-			e.item = content
-			e.Update()
-		})
+		e.item = content
+		e.Update()
 	})
 }
 
@@ -69,10 +65,9 @@ func (e *editor) onClick(ctx app.Context, ev app.Event) {
 }
 
 func (e *editor) getDefaultItem(articleID string) {
-	contentID, _ := strconv.Atoi(articleID)
 	e.item = Content{
-		ID:      contentID,
-		Image:   "https://storage.googleapis.com/hambach/hambach_logo.png",
+		ID:      articleID,
+		Image:   "https://hambach.s3.eu-central-1.amazonaws.com/hambach_logo.png",
 		Content: "<div class=\"matches\"><p></p></div>",
 	}
 	e.Update()
@@ -101,6 +96,7 @@ func (e *editor) OnActivate(ctx app.Context, ev app.Event) {
 }
 
 func (e *editor) save(contentType string) {
+	app_key := app.Getenv("WRITE_KEY")
 	id := app.Window().GetElementByID("id").Get("textContent").String()
 	title := app.Window().GetElementByID("title").Get("value").String()
 	link := app.Window().GetElementByID("link").Get("value").String()
@@ -111,22 +107,39 @@ func (e *editor) save(contentType string) {
 	content := app.Window().GetElementByID("content").Get("value").String()
 	active := app.Window().GetElementByID("active").Get("value").String()
 
-	data := url.Values{
-		"id":          {id},
-		"title":       {title},
-		"date":        {date},
-		"category":    {category},
-		"contentType": {contentType},
-		"image":       {image},
-		"creator":     {creator},
-		"content":     {content},
-		"active":      {active},
-		"link":        {link},
+	article := Content{
+		ID:       id,
+		Sort_key: date,
+		Title:    title,
+		Date:     date,
+		Category: category,
+		Type:     contentType,
+		Image:    image,
+		Creator:  creator,
+		Content:  content,
+		Active:   active,
+		Link:     link,
 	}
 
-	_, err := http.PostForm("/api/v1/content/save", data)
+	// marshal User to json
+	json, err := json.Marshal(article)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
+	}
+
+	client := &http.Client{}
+
+	// set the HTTP method, url, and request body
+	req, err := http.NewRequest(http.MethodPut, "https://api.spvgg-hambach.de/api/v1/content/?appkey="+app_key, bytes.NewBuffer(json))
+	if err != nil {
+		panic(err)
+	}
+
+	// set the request header Content-Type for json
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	_, err = client.Do(req)
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -134,7 +147,7 @@ func (e *editor) Render() app.UI {
 	return app.Div().Body(
 		&navbar{},
 		app.Section().Class("section").Body(
-			app.Body().Class("has-navbar-fixed-top").Body(
+			app.Div().Class("has-navbar-fixed-top").Body(
 				app.Div().Class("container").Body(
 					app.Div().Class("columns").Body(
 						app.Div().Class("column is-one-fifth").Body(
@@ -169,7 +182,6 @@ func (e *editor) Render() app.UI {
 										app.Label().Class("label").Text("Titelbild"),
 										app.Div().Class("control").Body(
 											app.Input().Class("input").Type("text").Value(e.item.Image).ID("image"),
-											//https://storage.googleapis.com/hambach/hambach_logo.png
 										),
 									),
 									app.Div().Class("field").Body(

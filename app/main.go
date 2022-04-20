@@ -2,9 +2,8 @@ package main
 
 import (
 	"log"
-	"net/http"
 
-	"github.com/maxence-charriere/go-app/v8/pkg/app"
+	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
 
 func main() {
@@ -16,7 +15,7 @@ func main() {
 
 	app.RunWhenOnBrowser()
 
-	http.Handle("/", &app.Handler{
+	err := app.GenerateStaticWebsite(".", &app.Handler{
 		Name:        "Hambach Admin",
 		Title:       "Hambach Admin",
 		Description: "Admin tools for Spvgg Hambach website",
@@ -31,10 +30,8 @@ func main() {
 			"/web/css/main.css",
 		},
 	})
-	http.HandleFunc("/api/v1/content", contentHandler)
-	http.HandleFunc("/api/v1/content/save", saveHandler)
 
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 }

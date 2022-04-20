@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strconv"
+	"sort"
 
-	"github.com/maxence-charriere/go-app/v8/pkg/app"
+	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
 
 type articleList struct {
@@ -17,42 +17,48 @@ type articleList struct {
 }
 
 func (a *articleList) edit(ctx app.Context, e app.Event) {
-	articleId := ctx.JSSrc.Get("id").String()
-	ctx.Navigate("/editor/" + articleId +"/edit")
+	articleId := ctx.JSSrc().Get("id").String()
+	ctx.Navigate("/editor/" + articleId + "/edit")
 }
 
 func (a *articleList) new(ctx app.Context, e app.Event) {
-	articleId := ctx.JSSrc.Get("id").String()
+	articleId := ctx.JSSrc().Get("id").String()
 	ctx.Navigate("/editor/" + articleId + "/new")
 }
 
 func (a *articleList) OnNav(ctx app.Context) {
 	// Launching a new goroutine:
 	ctx.Async(func() {
-		r, err := http.Get("/api/v1/content") // #TODO
+		app_key := app.Getenv("WRITE_KEY")
+		r, err := http.Get("https://api.spvgg-hambach.de/api/v1/content?appkey=" + app_key)
 		if err != nil {
 			app.Log(err)
 			return
 		}
 		defer r.Body.Close()
 
-		body, err := ioutil.ReadAll(r.Body)
+		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			app.Log(err)
 			return
 		}
 
-		// Storing HTTP response in component field:
-		ctx.Dispatch(func() {
-			sb := string(body)
+		sb := string(b)
 
-			var content []Content
-			json.Unmarshal([]byte(sb), &content)
+		var result []Content
+		json.Unmarshal([]byte(sb), &result)
 
-			a.content = content
-			a.nextID = strconv.Itoa(content[0].ID + 1)
-			a.Update()
+		var content []Content
+		for _, element := range result {
+			content = append(content, element)
+		}
+
+		sort.Slice(content, func(i, j int) bool {
+			return content[i].ID > content[j].ID
 		})
+
+		a.content = content
+		a.Update()
 	})
 }
 
@@ -84,7 +90,7 @@ func (a *articleList) Render() app.UI {
 						app.Nav().Class("level is-mobile").Body(
 							app.Div().Class("level-left").Body(
 								app.Div().Class("level-item").Body(
-									app.Span().Class("icon is-small").ID(strconv.Itoa(a.content[i].ID)).Body(
+									app.Span().Class("icon is-small").ID(a.content[i].ID).Body(
 										app.I().Class("fas fa-pen"),
 									).OnClick(a.edit),
 								),

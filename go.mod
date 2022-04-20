@@ -1,10 +1,10 @@
 module github.com/andre-karrlein/hambach-admin
 
-go 1.15
+go 1.18
 
 require (
-	cloud.google.com/go/firestore v1.5.0
-	github.com/maxence-charriere/go-app/v8 v8.0.2
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	google.golang.org/api v0.40.0
+	github.com/maxence-charriere/go-app/v9 v9.4.1
+	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 )
+
+require github.com/google/uuid v1.2.0 // indirect

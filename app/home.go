@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/maxence-charriere/go-app/v8/pkg/app"
+	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
 
 type home struct {
@@ -26,14 +26,13 @@ func (h *home) OnNav(ctx app.Context) {
 	}
 
 	h.status = status
-	h.Update()
 }
 
 func (h *home) Render() app.UI {
 	return app.Div().Body(
 		&navbar{},
 		app.Section().Class("section").Body(
-			app.Body().Class("has-navbar-fixed-top").Body(
+			app.Div().Class("has-navbar-fixed-top").Body(
 				app.Div().Class("container").Body(
 					app.Div().Class("columns").Body(
 						app.Div().Class("column is-one-fifth").Body(
@@ -41,7 +40,7 @@ func (h *home) Render() app.UI {
 						),
 						app.Div().Class("column").Body(
 							app.H1().Text("Hallo "+GetUsers()[h.status.User].name),
-							app.P().Text("comming soon test..."),
+							app.P().Text("comming soon..."),
 						),
 					),
 				),

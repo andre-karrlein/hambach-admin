@@ -1,0 +1,36 @@
+name: Upload Website
+
+on:
+  push:
+    branches:
+    - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '^1.17'
+
+    - name: Build wasm file
+      run: GOARCH=wasm GOOS=js go build -o build/web/app.wasm ./app
+
+    - name: Build app file
+      run: go build -o build/app ./app
+
+    - name: Generate Website
+      run: cd build && export WRITE_KEY=${{ secrets.WRITE_KEY }} && ./app && rm ./app
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1
+
+    - name: Deploy static site to S3 bucket
+      run: aws s3 sync ./build/ s3://admin.spvgg-hambach.de --delete

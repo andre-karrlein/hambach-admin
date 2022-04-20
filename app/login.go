@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/maxence-charriere/go-app/v8/pkg/app"
+	"github.com/maxence-charriere/go-app/v9/pkg/app"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,7 +21,7 @@ func (l *login) OnNav(ctx app.Context) {
 
 func (l *login) Render() app.UI {
 	return app.Section().Class("section").Body(
-		app.Body().Body(
+		app.Div().Body(
 			app.Div().Class("container").Body(
 				app.Form().Class("box").OnSubmit(l.OnSubmit).Body(
 					app.Div().Class("field").Body(
