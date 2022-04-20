@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -43,9 +45,30 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 }
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
-	file := ctx.JSSrc().Get("uploadedFile")
-
+	file := app.Window().GetElementByID("uploadedFile")
 	log.Println(file)
+
+	log.Println(file.JSValue())
+}
+
+func (fileList *fileList) OnDelete(ctx app.Context, e app.Event) {
+	id := ctx.JSSrc().Get("id").String()
+
+	ctx.Async(func() {
+		app_key := os.Getenv("WRITE_KEY")
+
+		client := &http.Client{}
+		// set the HTTP method, url, and request body
+		req, err := http.NewRequest(http.MethodDelete, "https://api.spvgg-hambach.de/api/v1/content/"+id+"?appkey="+app_key, bytes.NewBuffer([]byte{}))
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = client.Do(req)
+		if err != nil {
+			panic(err)
+		}
+	})
 }
 
 func (fileList *fileList) Render() app.UI {
@@ -76,7 +99,7 @@ func (fileList *fileList) Render() app.UI {
 								app.Div().Class("level-item").Body(
 									app.Span().Class("icon is-small").ID(fileList.files[i].Key).Body(
 										app.I().Class("fas fa-trash"),
-									),
+									).OnClick(fileList.OnDelete),
 								),
 							),
 						),
