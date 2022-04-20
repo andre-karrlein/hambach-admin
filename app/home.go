@@ -32,7 +32,7 @@ func (h *home) Render() app.UI {
 	return app.Div().Body(
 		&navbar{},
 		app.Section().Class("section").Body(
-			app.Div().Class("has-navbar-fixed-top").Body(
+			app.Div().Class("has-navbar-fixed-top body").Body(
 				app.Div().Class("container").Body(
 					app.Div().Class("columns").Body(
 						app.Div().Class("column is-one-fifth").Body(
