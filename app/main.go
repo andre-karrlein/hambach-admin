@@ -32,6 +32,7 @@ func main() {
 		},
 		ThemeColor: "#008000",
 		Env: app.Environment{
+			"READ_KEY":  os.Getenv("READ_KEY"),
 			"WRITE_KEY": os.Getenv("WRITE_KEY"),
 		},
 	})
