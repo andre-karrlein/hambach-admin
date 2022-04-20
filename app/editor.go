@@ -36,7 +36,7 @@ func (e *editor) OnNav(ctx app.Context) {
 
 	// Launching a new goroutine:
 	ctx.Async(func() {
-		app_key := app.Getenv("WRITE_KEY")
+		app_key := app.Getenv("READ_KEY")
 		r, err := http.Get("https://api.spvgg-hambach.de/api/v1/content/" + id + "?appkey=" + app_key)
 		if err != nil {
 			app.Log(err)
