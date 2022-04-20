@@ -14,6 +14,7 @@ func (s *sidebar) Render() app.UI {
 				app.A().Href("/").Text("Dashboard"),
 				app.A().Href("/articles").Text("Artikel"),
 				app.A().Href("/metrics").Text("Metriken"),
+				app.A().Href("/files").Text("Dateien"),
 			),
 		),
 	)

@@ -12,6 +12,7 @@ func main() {
 	app.Route("/home", &home{})
 	app.Route("/articles", &articles{})
 	app.Route("/metrics", &metrics{})
+	app.Route("/files", &files{})
 	app.RouteWithRegexp("^/editor.*", &editor{})
 
 	app.RunWhenOnBrowser()
