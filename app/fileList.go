@@ -46,7 +46,8 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 }
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
-	fileInput := app.Window().GetElementByID("uploadedFile")
+	fileInput := app.Window().Call("getElementById", "uploadedFile")
+	log.Println(fileInput)
 	log.Println("start")
 
 	fileInput.Set("oninput", app.FuncOf(func(v app.Value, x []app.Value) any {
