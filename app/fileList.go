@@ -46,16 +46,28 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 }
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
-	file := app.Window().GetElementByID("uploadedFile").Get("files").Get("0")
+	var encoded string
+	fileInput := app.Window().GetElementByID("uploadedFile")
 
-	// Encode as base64.
-	encoded := base64.StdEncoding.EncodeToString([]byte(file.String()))
-	uploadedData := UploadedFile{
-		Name: file.Get("name").String(),
-		Data: encoded,
-	}
+	fileInput.Set("oninput", app.FuncOf(func(v app.Value, x []app.Value) any {
+		fileInput.Get("files").Call("item", 0).Call("arrayBuffer").Call("then", app.FuncOf(func(v app.Value, x []app.Value) any {
+			data := app.Window().Get("Uint8Array").New(x[0])
+			dst := make([]byte, data.Get("length").Int())
+			app.CopyBytesToGo(dst, data)
+			// the data from the file is in dst - do what you want with it
+			encoded = base64.StdEncoding.EncodeToString([]byte(dst))
+			uploadedData := UploadedFile{
+				Name: fileInput.Get("name").String(),
+				Data: encoded,
+			}
 
-	log.Println(uploadedData)
+			log.Println(uploadedData)
+
+			return nil
+		}))
+
+		return nil
+	}))
 }
 
 func (fileList *fileList) OnDelete(ctx app.Context, e app.Event) {
@@ -76,6 +88,16 @@ func (fileList *fileList) OnDelete(ctx app.Context, e app.Event) {
 			panic(err)
 		}
 	})
+}
+
+func (fileList *fileList) OnChoose(ctx app.Context, e app.Event) {
+	var file File
+	for _, value := range fileList.files {
+		if value.ID == ctx.JSSrc().Get("id").String() {
+			file = value
+		}
+	}
+	ctx.SetState("file", file)
 }
 
 func (fileList *fileList) Render() app.UI {

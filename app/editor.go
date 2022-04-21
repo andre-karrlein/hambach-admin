@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -14,6 +15,7 @@ type editor struct {
 	app.Compo
 
 	item Content
+	file File
 }
 
 func (e *editor) OnNav(ctx app.Context) {
@@ -58,6 +60,12 @@ func (e *editor) OnNav(ctx app.Context) {
 		e.item = content
 		e.Update()
 	})
+}
+
+func (e *editor) OnMount(ctx app.Context) {
+	ctx.ObserveState("file").Value(&e.file)
+	log.Println(e.file.Key)
+	e.Update()
 }
 
 func (e *editor) onClick(ctx app.Context, ev app.Event) {
