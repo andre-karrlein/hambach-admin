@@ -76,7 +76,7 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 			}
 
 			client := &http.Client{
-				Timeout: 5 * time.Second,
+				Timeout: 10 * time.Second,
 			}
 
 			// set the HTTP method, url, and request body
