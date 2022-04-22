@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
@@ -46,6 +45,7 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 }
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
+	app_key := app.Getenv("WRITE_KEY")
 	fileInput := app.Window().GetElementByID("uploadedFile")
 
 	fileInput.Get("files").Call("item", 0).Call("arrayBuffer").Call("then", app.FuncOf(func(v app.Value, x []app.Value) any {
@@ -59,7 +59,26 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 			Data: encoded,
 		}
 
-		log.Println(uploadedData)
+		// marshal User to json
+		json, err := json.Marshal(uploadedData)
+		if err != nil {
+			panic(err)
+		}
+
+		client := &http.Client{}
+
+		// set the HTTP method, url, and request body
+		req, err := http.NewRequest(http.MethodPost, "https://api.spvgg-hambach.de/api/v1/files/?appkey="+app_key, bytes.NewBuffer(json))
+		if err != nil {
+			panic(err)
+		}
+
+		// set the request header Content-Type for json
+		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+		_, err = client.Do(req)
+		if err != nil {
+			panic(err)
+		}
 
 		return nil
 	}))
