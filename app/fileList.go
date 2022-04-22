@@ -55,7 +55,7 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 		// the data from the file is in dst - do what you want with it
 		encoded := base64.StdEncoding.EncodeToString(dst)
 		uploadedData := UploadedFile{
-			Name: fileInput.Get("name").String(),
+			Name: fileInput.Get("files").Call("item", 0).Get("name").String(),
 			Data: encoded,
 		}
 
