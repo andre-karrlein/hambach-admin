@@ -47,29 +47,23 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 	fileInput := app.Window().GetElementByID("uploadedFile")
-	log.Println(fileInput)
 	log.Println("start")
 
-	fileInput.Set("oninput", app.FuncOf(func(v app.Value, x []app.Value) any {
+	fileInput.Get("files").Call("item", 0).Call("arrayBuffer").Call("then", app.FuncOf(func(v app.Value, x []app.Value) any {
 		log.Println("step 1")
-		fileInput.Get("files").Call("item", 0).Call("arrayBuffer").Call("then", app.FuncOf(func(v app.Value, x []app.Value) any {
-			log.Println("step 2")
-			data := app.Window().Get("Uint8Array").New(x[0])
-			dst := make([]byte, data.Get("length").Int())
-			app.CopyBytesToGo(dst, data)
-			log.Println("step 3")
-			log.Println(string(dst))
-			// the data from the file is in dst - do what you want with it
-			encoded := base64.StdEncoding.EncodeToString(dst)
-			uploadedData := UploadedFile{
-				Name: fileInput.Get("name").String(),
-				Data: encoded,
-			}
+		data := app.Window().Get("Uint8Array").New(x[0])
+		dst := make([]byte, data.Get("length").Int())
+		app.CopyBytesToGo(dst, data)
+		log.Println("step 2")
+		log.Println(string(dst))
+		// the data from the file is in dst - do what you want with it
+		encoded := base64.StdEncoding.EncodeToString(dst)
+		uploadedData := UploadedFile{
+			Name: fileInput.Get("name").String(),
+			Data: encoded,
+		}
 
-			log.Println(uploadedData)
-
-			return nil
-		}))
+		log.Println(uploadedData)
 
 		return nil
 	}))
