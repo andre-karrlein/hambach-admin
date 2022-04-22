@@ -5,9 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+	"sort"
+	"time"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -40,6 +41,10 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 		var files []File
 		json.Unmarshal([]byte(sb), &files)
 
+		sort.Slice(files, func(i, j int) bool {
+			return files[i].LastModified > files[j].LastModified
+		})
+
 		fileList.files = files
 		fileList.Update()
 	})
@@ -67,7 +72,9 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 				panic(err)
 			}
 
-			client := &http.Client{}
+			client := &http.Client{
+				Timeout: 5 * time.Second,
+			}
 
 			// set the HTTP method, url, and request body
 			req, err := http.NewRequest(http.MethodPost, "https://api.spvgg-hambach.de/api/v1/files/?appkey="+app_key, bytes.NewBuffer(json))
@@ -84,7 +91,6 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 
 			return nil
 		}))
-		log.Println("done")
 	})
 }
 
