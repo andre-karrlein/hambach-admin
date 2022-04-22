@@ -47,15 +47,11 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 
 func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 	fileInput := app.Window().GetElementByID("uploadedFile")
-	log.Println("start")
 
 	fileInput.Get("files").Call("item", 0).Call("arrayBuffer").Call("then", app.FuncOf(func(v app.Value, x []app.Value) any {
-		log.Println("step 1")
 		data := app.Window().Get("Uint8Array").New(x[0])
 		dst := make([]byte, data.Get("length").Int())
 		app.CopyBytesToGo(dst, data)
-		log.Println("step 2")
-		log.Println(string(dst))
 		// the data from the file is in dst - do what you want with it
 		encoded := base64.StdEncoding.EncodeToString(dst)
 		uploadedData := UploadedFile{
