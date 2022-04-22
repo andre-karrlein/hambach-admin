@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -48,40 +49,69 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 	app_key := app.Getenv("WRITE_KEY")
 	fileInput := app.Window().GetElementByID("uploadedFile")
 
-	fileInput.Get("files").Call("item", 0).Call("arrayBuffer").Call("then", app.FuncOf(func(v app.Value, x []app.Value) any {
-		data := app.Window().Get("Uint8Array").New(x[0])
-		dst := make([]byte, data.Get("length").Int())
-		app.CopyBytesToGo(dst, data)
-		// the data from the file is in dst - do what you want with it
-		encoded := base64.StdEncoding.EncodeToString(dst)
-		uploadedData := UploadedFile{
-			Name: fileInput.Get("files").Call("item", 0).Get("name").String(),
-			Data: encoded,
-		}
+	ctx.Async(func() {
+		fileInput.Get("files").Call("item", 0).Call("arrayBuffer").Call("then", app.FuncOf(func(v app.Value, x []app.Value) any {
+			data := app.Window().Get("Uint8Array").New(x[0])
+			dst := make([]byte, data.Get("length").Int())
+			app.CopyBytesToGo(dst, data)
+			// the data from the file is in dst - do what you want with it
+			encoded := base64.StdEncoding.EncodeToString(dst)
+			uploadedData := UploadedFile{
+				Name: fileInput.Get("files").Call("item", 0).Get("name").String(),
+				Data: encoded,
+			}
 
-		// marshal User to json
-		json, err := json.Marshal(uploadedData)
-		if err != nil {
-			panic(err)
-		}
+			// marshal User to json
+			json, err := json.Marshal(uploadedData)
+			if err != nil {
+				panic(err)
+			}
 
-		client := &http.Client{}
+			client := &http.Client{}
 
-		// set the HTTP method, url, and request body
-		req, err := http.NewRequest(http.MethodPost, "https://api.spvgg-hambach.de/api/v1/files/?appkey="+app_key, bytes.NewBuffer(json))
-		if err != nil {
-			panic(err)
-		}
+			// set the HTTP method, url, and request body
+			req, err := http.NewRequest(http.MethodPost, "https://api.spvgg-hambach.de/api/v1/files/?appkey="+app_key, bytes.NewBuffer(json))
+			if err != nil {
+				panic(err)
+			}
 
-		// set the request header Content-Type for json
-		req.Header.Set("Content-Type", "application/json; charset=utf-8")
-		_, err = client.Do(req)
-		if err != nil {
-			panic(err)
-		}
+			// set the request header Content-Type for json
+			req.Header.Set("Content-Type", "application/json; charset=utf-8")
+			_, err = client.Do(req)
+			if err != nil {
+				panic(err)
+			}
 
-		return nil
-	}))
+			return nil
+		}))
+		ctx.Async(func() {
+			app_key := app.Getenv("READ_KEY")
+			r, err := http.Get("https://api.spvgg-hambach.de/api/v1/files?appkey=" + app_key)
+			if err != nil {
+				app.Log(err)
+				return
+			}
+			defer r.Body.Close()
+
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				app.Log(err)
+				return
+			}
+
+			sb := string(b)
+
+			var files []File
+			json.Unmarshal([]byte(sb), &files)
+
+			sort.Slice(files, func(i, j int) bool {
+				return files[i].LastModified > files[j].LastModified
+			})
+
+			fileList.files = files
+			fileList.Update()
+		})
+	})
 }
 
 func (fileList *fileList) OnDelete(ctx app.Context, e app.Event) {
