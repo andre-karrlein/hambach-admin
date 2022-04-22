@@ -75,9 +75,7 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 				panic(err)
 			}
 
-			client := &http.Client{
-				Timeout: 10 * time.Second,
-			}
+			client := &http.Client{}
 
 			// set the HTTP method, url, and request body
 			req, err := http.NewRequest(http.MethodPost, "https://api.spvgg-hambach.de/api/v1/files/?appkey="+app_key, bytes.NewBuffer(json))
