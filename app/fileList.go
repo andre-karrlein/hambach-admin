@@ -41,8 +41,11 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 		var files []File
 		json.Unmarshal([]byte(sb), &files)
 
+		format := "2006-01-02T15:04:05.000Z"
 		sort.Slice(files, func(i, j int) bool {
-			return files[i].LastModified > files[j].LastModified
+			time_i, _ := time.Parse(format, files[i].LastModified)
+			time_j, _ := time.Parse(format, files[j].LastModified)
+			return time_i.Before(time_j)
 		})
 
 		fileList.files = files
