@@ -5,9 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
-	"sort"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -84,33 +84,7 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 
 			return nil
 		}))
-		ctx.Async(func() {
-			app_key := app.Getenv("READ_KEY")
-			r, err := http.Get("https://api.spvgg-hambach.de/api/v1/files?appkey=" + app_key)
-			if err != nil {
-				app.Log(err)
-				return
-			}
-			defer r.Body.Close()
-
-			b, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				app.Log(err)
-				return
-			}
-
-			sb := string(b)
-
-			var files []File
-			json.Unmarshal([]byte(sb), &files)
-
-			sort.Slice(files, func(i, j int) bool {
-				return files[i].LastModified > files[j].LastModified
-			})
-
-			fileList.files = files
-			fileList.Update()
-		})
+		log.Println("done")
 	})
 }
 
