@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -44,7 +45,11 @@ func (fileList *fileList) OnNav(ctx app.Context) {
 		format := "2006-01-02T15:04:05.000Z"
 		sort.Slice(files, func(i, j int) bool {
 			time_i, _ := time.Parse(format, files[i].LastModified)
+			log.Println(time_i)
 			time_j, _ := time.Parse(format, files[j].LastModified)
+			log.Println(time_j)
+			log.Println(time_i.Before(time_j))
+			log.Println(time_i.After(time_j))
 			return time_i.Before(time_j)
 		})
 
