@@ -1,9 +1,9 @@
 package main
 
 type File struct {
-	ID           string
-	Key          string
-	LastModified string
+	ID           string `json:"id"`
+	Key          string `json:"key"`
+	LastModified string `json:"last_modified"`
 }
 
 type UploadedFile struct {
