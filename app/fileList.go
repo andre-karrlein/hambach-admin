@@ -151,7 +151,7 @@ func (fileList *fileList) Render() app.UI {
 						app.Nav().Class("level is-mobile").Body(
 							app.Div().Class("level-left").Body(
 								app.Div().Class("level-item").Body(
-									app.Span().Class("icon is-small").ID(fileList.files[i].Key).Body(
+									app.Span().Class("icon is-small").ID(fileList.files[i].ID).Body(
 										app.I().Class("fas fa-trash"),
 									).OnClick(fileList.OnDelete),
 								),
