@@ -92,6 +92,8 @@ func (fileList *fileList) OnUpload(ctx app.Context, e app.Event) {
 
 			return nil
 		}))
+
+		ctx.Reload()
 	})
 }
 
@@ -112,6 +114,8 @@ func (fileList *fileList) OnDelete(ctx app.Context, e app.Event) {
 		if err != nil {
 			panic(err)
 		}
+
+		ctx.Reload()
 	})
 }
 
