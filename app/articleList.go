@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/maxence-charriere/go-app/v9/pkg/app"
 )
@@ -77,10 +78,11 @@ func (a *articleList) Render() app.UI {
 			}
 
 			return app.Div().Class("box").Style("background-color", color).Body(
+
 				app.Article().Class("media").Body(
 					app.Div().Class("media-left").Body(
 						app.Figure().Class("image is-64x64").Body(
-							app.Img().Src(a.content[i].Image),
+							app.Img().Src(strings.Replace(a.content[i].Image, "https://storage.googleapis.com/hambach/", "https://hambach.s3.eu-central-1.amazonaws.com/", 1)),
 						),
 					),
 					app.Div().Class("media-content").Body(
