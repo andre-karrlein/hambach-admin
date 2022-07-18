@@ -61,6 +61,9 @@ func (a *articleList) OnNav(ctx app.Context) {
 			return content_i > content_j
 		})
 
+		idInt, _ := strconv.Atoi(content[0].ID)
+		nextID := strconv.Itoa(idInt + 1)
+		a.nextID = nextID
 		a.content = content
 		a.Update()
 	})
