@@ -116,7 +116,6 @@ func (e *editor) save(contentType string) {
 	active := app.Window().GetElementByID("active").Get("value").String()
 
 	image = strings.Replace(image, "public", "web", 1)
-	content = strings.ReplaceAll(content, "/public", "")
 	content = strings.ReplaceAll(content, "/images/", "/web/images/")
 	image = strings.Replace(image, "https://storage.googleapis.com/hambach/", "https://hambach.s3.eu-central-1.amazonaws.com/", 1)
 	content = strings.ReplaceAll(content, "https://storage.googleapis.com/hambach/", "https://hambach.s3.eu-central-1.amazonaws.com/")
